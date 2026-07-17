@@ -1,4 +1,5 @@
 import { createInitialState } from "@/lib/default-state";
+import { sessionTitles } from "@/lib/session-titles";
 import { QueueState } from "@/lib/types";
 
 export interface QueueDataService {
@@ -20,7 +21,11 @@ export const localQueueService: QueueDataService = {
       return {
         ...initial,
         ...parsed,
-        settings: { ...initial.settings, ...parsed.settings },
+        settings: {
+          ...initial.settings,
+          ...parsed.settings,
+          sessionTitle: sessionTitles.includes(parsed.settings?.sessionTitle) ? parsed.settings.sessionTitle : initial.settings.sessionTitle
+        },
         queue: (parsed.queue ?? []).map((entry) => ({ ...entry, allocatedSeconds: entry.allocatedSeconds ?? initial.settings.defaultDurationSeconds })),
         currentEntry: parsed.currentEntry ? { ...parsed.currentEntry, allocatedSeconds: parsed.currentEntry.allocatedSeconds ?? initial.settings.defaultDurationSeconds } : undefined
       };

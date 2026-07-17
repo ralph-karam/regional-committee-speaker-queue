@@ -23,19 +23,18 @@ import { Clock } from "@/components/clock";
 import { SpeakerTimer } from "@/components/timer";
 import { Badge, Button, Card, Field, inputClass } from "@/components/ui";
 import { averageWaitMinutes, defaultDurationForSpeaker, speakerById } from "@/lib/queue-logic";
+import { sessionTitles } from "@/lib/session-titles";
 import { useQueueStore } from "@/lib/store";
-import { RequestType, Speaker, SpeakerCategory } from "@/lib/types";
+import { RequestType, SpeakerCategory } from "@/lib/types";
 import { elapsedSince } from "@/lib/timer-logic";
 
 const categories: Array<SpeakerCategory | "All"> = ["All", "Member State", "Non-State Actor", "Observer", "UN Entity", "Intergovernmental Organization", "Secretariat"];
-const requestTypes: RequestType[] = ["General intervention", "Point of order", "Right of reply", "Procedural intervention", "Secretariat clarification", "Other"];
+const defaultRequestType: RequestType = "General intervention";
 
 export function OperatorApp() {
   const store = useQueueStore();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<(typeof categories)[number]>("All");
-  const [requestType, setRequestType] = useState<RequestType>("General intervention");
-  const [customDurationSeconds, setCustomDurationSeconds] = useState("auto");
   const [historyQuery, setHistoryQuery] = useState("");
   const [mobileTab, setMobileTab] = useState("speakers");
   const searchRef = useRef<HTMLInputElement>(null);
@@ -115,7 +114,7 @@ export function OperatorApp() {
               <div className="mb-3 flex items-center gap-2 text-lg font-bold"><Settings className="h-5 w-5 text-unblue" /> Meeting setup</div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <Field label="Meeting title"><input className={inputClass} value={store.settings.meetingTitle} onChange={(event) => store.updateSettings({ meetingTitle: event.target.value })} /></Field>
-                <Field label="Session title"><input className={inputClass} value={store.settings.sessionTitle} onChange={(event) => store.updateSettings({ sessionTitle: event.target.value })} /></Field>
+                <Field label="Session title"><select className={inputClass} value={store.settings.sessionTitle} onChange={(event) => store.updateSettings({ sessionTitle: event.target.value })}>{sessionTitles.map((title) => <option key={title}>{title}</option>)}</select></Field>
                 <Field label="Date"><input className={inputClass} type="date" value={store.settings.meetingDate} onChange={(event) => store.updateSettings({ meetingDate: event.target.value })} /></Field>
                 <Field label="Room"><input className={inputClass} value={store.settings.room} onChange={(event) => store.updateSettings({ room: event.target.value })} /></Field>
                 <Field label="Member State duration"><DurationSelect value={store.settings.memberStateDurationSeconds} onChange={(value) => store.updateSettings({ memberStateDurationSeconds: value, defaultDurationSeconds: value })} /></Field>
@@ -149,21 +148,12 @@ export function OperatorApp() {
               <div className="grid gap-3">
                 <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-slate-500" /><input ref={searchRef} className={`${inputClass} w-full pl-9`} placeholder="Search name, delegation, title" value={query} onChange={(event) => setQuery(event.target.value)} /></div>
                 <select className={inputClass} value={category} onChange={(event) => setCategory(event.target.value as typeof category)}>{categories.map((item) => <option key={item}>{item}</option>)}</select>
-                <select className={inputClass} value={requestType} onChange={(event) => setRequestType(event.target.value as RequestType)}>{requestTypes.map((item) => <option key={item}>{item}</option>)}</select>
-                <select className={inputClass} value={customDurationSeconds} onChange={(event) => setCustomDurationSeconds(event.target.value)} aria-label="Speaking time">
-                  <option value="auto">Auto time by category</option>
-                  <option value="60">Custom: 1 minute</option>
-                  <option value="120">Custom: 2 minutes</option>
-                  <option value="180">Custom: 3 minutes</option>
-                  <option value="300">Custom: 5 minutes</option>
-                  <option value="600">Custom: 10 minutes</option>
-                </select>
               </div>
               <div className="mt-4 grid max-h-[760px] gap-2 overflow-auto pr-1">
                 {filteredSpeakers.map((speaker) => {
                   const disabled = speaker.status === "queued" || speaker.status === "speaking" || speaker.status === "unavailable";
                   return (
-                    <article key={speaker.id} onDoubleClick={() => store.addSpeakerToQueue(speaker.id, requestType, selectedDuration(speaker, store, customDurationSeconds))} className="grid gap-2 rounded-md border border-slate-200 p-3 dark:border-slate-800">
+                    <article key={speaker.id} onDoubleClick={() => store.addSpeakerToQueue(speaker.id, defaultRequestType, defaultDurationForSpeaker(store, speaker))} className="grid gap-2 rounded-md border border-slate-200 p-3 dark:border-slate-800">
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <h3 className="font-bold">{speaker.fullName}</h3>
@@ -171,9 +161,9 @@ export function OperatorApp() {
                         </div>
                         <Badge tone={speaker.status === "available" ? "green" : speaker.status === "unavailable" ? "red" : "amber"}>{speaker.status}</Badge>
                       </div>
-                      <div className="flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300"><span>{speaker.category}</span><span>{speaker.preferredLanguage}</span><span>{formatDuration(selectedDuration(speaker, store, customDurationSeconds))}</span></div>
+                      <div className="flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300"><span>{speaker.category}</span><span>{speaker.preferredLanguage}</span><span>{formatDuration(defaultDurationForSpeaker(store, speaker))}</span></div>
                       <div className="grid grid-cols-[1fr_auto] gap-2">
-                        <Button type="button" size="sm" disabled={disabled} onClick={() => store.addSpeakerToQueue(speaker.id, requestType, selectedDuration(speaker, store, customDurationSeconds))}><Plus className="h-4 w-4" /> Add to queue</Button>
+                        <Button type="button" size="sm" disabled={disabled} onClick={() => store.addSpeakerToQueue(speaker.id, defaultRequestType, defaultDurationForSpeaker(store, speaker))}><Plus className="h-4 w-4" /> Add to queue</Button>
                         <Button type="button" size="sm" variant="ghost" onClick={() => store.upsertSpeaker({ ...speaker, status: speaker.status === "unavailable" ? "available" : "unavailable" })}>{speaker.status === "unavailable" ? "Restore" : "Unavailable"}</Button>
                       </div>
                     </article>
@@ -327,10 +317,6 @@ function DurationSelect({ value, onChange }: { value: number; onChange: (value: 
       <option value={600}>10 minutes</option>
     </select>
   );
-}
-
-function selectedDuration(speaker: Speaker, store: ReturnType<typeof useQueueStore.getState>, customDurationSeconds: string) {
-  return customDurationSeconds === "auto" ? defaultDurationForSpeaker(store, speaker) : Number(customDurationSeconds);
 }
 
 function formatDuration(seconds: number) {

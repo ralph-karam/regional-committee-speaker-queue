@@ -1,9 +1,10 @@
 import { sampleSpeakers } from "@/data/sample-speakers";
+import { sessionTitles } from "@/lib/session-titles";
 import { MeetingSettings, QueueState } from "@/lib/types";
 
 export const defaultSettings: MeetingSettings = {
   meetingTitle: "Regional Committee Speaker Queue",
-  sessionTitle: "Plenary session",
+  sessionTitle: sessionTitles[0],
   meetingDate: new Date().toISOString().slice(0, 10),
   room: "Main conference room",
   defaultDurationSeconds: 180,
