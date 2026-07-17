@@ -14,6 +14,7 @@ import {
   updateEntry
 } from "@/lib/queue-logic";
 import { activeQueueService } from "@/lib/supabase-service";
+import { mergeCategories } from "@/lib/categories";
 import { MeetingSettings, QueueEntry, QueueState, RequestType, Speaker } from "@/lib/types";
 
 type QueueStore = QueueState & {
@@ -34,6 +35,7 @@ type QueueStore = QueueState & {
   skipCurrent: () => void;
   restoreCompletedEntry: (completedId: string) => void;
   updateSettings: (settings: Partial<MeetingSettings>) => void;
+  addCategory: (category: string) => void;
   upsertSpeaker: (speaker: Speaker) => void;
   deleteSpeaker: (speakerId: string) => void;
   clearSpeakers: () => void;
@@ -47,7 +49,7 @@ type QueueStore = QueueState & {
 const push = (current: QueueStore, next: QueueState, undo = true) => ({
   ...next,
   hydrated: current.hydrated,
-  undoStack: undo ? [{ speakers: current.speakers, queue: current.queue, currentEntry: current.currentEntry, completed: current.completed, settings: current.settings, activity: current.activity }, ...current.undoStack].slice(0, 10) : current.undoStack,
+  undoStack: undo ? [{ speakers: current.speakers, customCategories: current.customCategories, queue: current.queue, currentEntry: current.currentEntry, completed: current.completed, settings: current.settings, activity: current.activity }, ...current.undoStack].slice(0, 10) : current.undoStack,
   lastSavedAt: new Date().toISOString()
 });
 
@@ -76,7 +78,16 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
   skipCurrent: () => set((current) => (current.currentEntry ? push(current, { ...current, currentEntry: undefined, activity: [{ id: `activity-${Date.now()}`, message: "Current speaker skipped", createdAt: new Date().toISOString() }, ...current.activity].slice(0, 12) }) : current)),
   restoreCompletedEntry: (completedId) => set((current) => push(current, restoreCompleted(current, completedId))),
   updateSettings: (settings) => set((current) => push(current, { ...current, settings: { ...current.settings, ...settings } }, false)),
-  upsertSpeaker: (speaker) => set((current) => push(current, { ...current, speakers: current.speakers.some((item) => item.id === speaker.id) ? current.speakers.map((item) => (item.id === speaker.id ? speaker : item)) : [...current.speakers, speaker] })),
+  addCategory: (category) => set((current) => {
+    const cleanCategory = category.trim();
+    if (!cleanCategory) return current;
+    return push(current, { ...current, customCategories: mergeCategories(current.customCategories, [cleanCategory]) }, false);
+  }),
+  upsertSpeaker: (speaker) => set((current) => push(current, {
+    ...current,
+    customCategories: mergeCategories(current.customCategories, [speaker.category]),
+    speakers: current.speakers.some((item) => item.id === speaker.id) ? current.speakers.map((item) => (item.id === speaker.id ? speaker : item)) : [...current.speakers, speaker]
+  })),
   deleteSpeaker: (speakerId) => set((current) => push(current, {
     ...current,
     speakers: current.speakers.filter((speaker) => speaker.id !== speakerId),
@@ -92,7 +103,7 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     completed: [],
     activity: [{ id: `activity-${Date.now()}`, message: "All speakers deleted", createdAt: new Date().toISOString() }, ...current.activity].slice(0, 12)
   })),
-  importSpeakers: (speakers) => set((current) => push(current, { ...current, speakers })),
+  importSpeakers: (speakers) => set((current) => push(current, { ...current, customCategories: mergeCategories(current.customCategories, speakers.map((speaker) => speaker.category)), speakers })),
   clearQueue: () => set((current) => push(current, { ...current, queue: [], currentEntry: undefined, speakers: current.speakers.map((speaker) => (speaker.status === "queued" || speaker.status === "speaking" ? { ...speaker, status: "available" } : speaker)) })),
   clearHistory: () => set((current) => push(current, { ...current, completed: [] })),
   resetMeeting: () => {
@@ -109,6 +120,7 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
 export function selectSerializableState(state: QueueStore): QueueState {
   return {
     speakers: state.speakers,
+    customCategories: state.customCategories,
     queue: state.queue,
     currentEntry: state.currentEntry,
     completed: state.completed,

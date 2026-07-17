@@ -1,13 +1,6 @@
 export type SpeakerStatus = "available" | "queued" | "speaking" | "completed" | "unavailable";
 
-export type SpeakerCategory =
-  | "Member State"
-  | "Non-State Actor"
-  | "Observer"
-  | "UN Entity"
-  | "Intergovernmental Organization"
-  | "Government Entity"
-  | "Secretariat";
+export type SpeakerCategory = string;
 
 export type RequestType =
   | "General intervention"
@@ -79,6 +72,7 @@ export interface ActivityEvent {
 
 export interface QueueState {
   speakers: Speaker[];
+  customCategories: SpeakerCategory[];
   queue: QueueEntry[];
   currentEntry?: QueueEntry;
   completed: CompletedIntervention[];

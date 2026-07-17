@@ -17,6 +17,7 @@ export function normalizeQueueState(saved?: Partial<QueueState> | null): QueueSt
     queue: (saved.queue ?? []).map((entry) => ({ ...entry, allocatedSeconds: entry.allocatedSeconds ?? initial.settings.defaultDurationSeconds })),
     currentEntry: saved.currentEntry ? { ...saved.currentEntry, allocatedSeconds: saved.currentEntry.allocatedSeconds ?? initial.settings.defaultDurationSeconds } : undefined,
     speakers: saved.speakers ?? initial.speakers,
+    customCategories: saved.customCategories ?? initial.customCategories,
     completed: saved.completed ?? initial.completed,
     activity: saved.activity ?? initial.activity
   };

@@ -1,6 +1,6 @@
 import { Speaker, SpeakerCategory, SpeakerStatus } from "@/lib/types";
+import { defaultSpeakerCategories } from "@/lib/categories";
 
-const categories: SpeakerCategory[] = ["Member State", "Non-State Actor", "Observer", "UN Entity", "Intergovernmental Organization", "Government Entity", "Secretariat"];
 const statuses: SpeakerStatus[] = ["available", "queued", "speaking", "completed", "unavailable"];
 const headerNames = new Set(["fullname", "delegation", "title", "category", "preferredlanguage", "status", "entity", "type", "speaker", "name"]);
 
@@ -18,7 +18,7 @@ export function parseSpeakerCsv(csv: string): Speaker[] {
       fullName: fullName || "Unnamed speaker",
       delegation: delegation || "Unspecified delegation",
       title,
-      category: categories.includes(category as SpeakerCategory) ? (category as SpeakerCategory) : "Member State",
+      category: category || "Member State",
       preferredLanguage,
       status: statuses.includes(status as SpeakerStatus) ? (status as SpeakerStatus) : "available"
     };
@@ -56,13 +56,13 @@ function compactSpeaker(cells: string[], index: number): Speaker {
 
 function entityCategory(value?: string): SpeakerCategory | undefined {
   const code = normalize(value);
-  if (["ms", "memberstate", "memberstates", "memberstatecountry"].includes(code)) return "Member State";
-  if (["nsa", "nonstateactor", "nonstateactors"].includes(code)) return "Non-State Actor";
-  if (["observer", "obs", "observerms", "observermemberstate", "observermemberstates"].includes(code)) return "Observer";
-  if (["un", "unentity", "unagency", "unspecializedrelatedagencies", "unspecializedagency", "specializedagency"].includes(code)) return "UN Entity";
-  if (["ig", "igo", "intergovernmentalorganization", "intergovernmentalorganizations"].includes(code)) return "Intergovernmental Organization";
-  if (["governmententity", "governmententities", "goventity"].includes(code)) return "Government Entity";
-  if (["sec", "secretariat"].includes(code)) return "Secretariat";
+  if (["ms", "memberstate", "memberstates", "memberstatecountry"].includes(code)) return defaultSpeakerCategories[0];
+  if (["nsa", "nonstateactor", "nonstateactors"].includes(code)) return defaultSpeakerCategories[1];
+  if (["observer", "obs", "observerms", "observermemberstate", "observermemberstates"].includes(code)) return defaultSpeakerCategories[2];
+  if (["un", "unentity", "unagency", "unspecializedrelatedagencies", "unspecializedagency", "specializedagency"].includes(code)) return defaultSpeakerCategories[3];
+  if (["ig", "igo", "intergovernmentalorganization", "intergovernmentalorganizations"].includes(code)) return defaultSpeakerCategories[4];
+  if (["governmententity", "governmententities", "goventity"].includes(code)) return defaultSpeakerCategories[5];
+  if (["sec", "secretariat"].includes(code)) return defaultSpeakerCategories[6];
   return undefined;
 }
 

@@ -22,19 +22,19 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Clock } from "@/components/clock";
 import { SpeakerTimer } from "@/components/timer";
 import { Badge, Button, Card, Field, inputClass } from "@/components/ui";
+import { defaultSpeakerCategories, mergeCategories } from "@/lib/categories";
 import { defaultDurationForSpeaker, speakerById } from "@/lib/queue-logic";
 import { sessionTitles } from "@/lib/session-titles";
 import { useQueueStore } from "@/lib/store";
 import { RequestType, SpeakerCategory } from "@/lib/types";
 import { elapsedSince } from "@/lib/timer-logic";
 
-const categories: Array<SpeakerCategory | "All"> = ["All", "Member State", "Non-State Actor", "Observer", "UN Entity", "Intergovernmental Organization", "Government Entity", "Secretariat"];
 const defaultRequestType: RequestType = "General intervention";
 
 export function OperatorApp() {
   const store = useQueueStore();
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<(typeof categories)[number]>("All");
+  const [category, setCategory] = useState<SpeakerCategory | "All">("All");
   const [historyQuery, setHistoryQuery] = useState("");
   const [mobileTab, setMobileTab] = useState("speakers");
   const searchRef = useRef<HTMLInputElement>(null);
@@ -42,6 +42,10 @@ export function OperatorApp() {
   const currentSpeaker = speakerById(store, store.currentEntry?.speakerId);
   const nextEntry = store.queue.find((entry) => entry.status === "waiting");
   const nextSpeaker = speakerById(store, nextEntry?.speakerId);
+  const categories = useMemo(
+    () => ["All", ...mergeCategories(defaultSpeakerCategories, store.customCategories, store.speakers.map((speaker) => speaker.category))],
+    [store.customCategories, store.speakers]
+  );
   const filteredSpeakers = useMemo(() => {
     const term = query.toLowerCase();
     return store.speakers

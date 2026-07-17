@@ -61,7 +61,7 @@ fullName,delegation,title,category,preferredLanguage,status
 "Maya Haddad","Argana","Permanent Representative","Member State","Arabic","available"
 ```
 
-Valid categories are `Member State`, `Non-State Actor`, `Observer`, `UN Entity`, `Intergovernmental Organization`, `Government Entity`, and `Secretariat`.
+Default categories are `Member State`, `Non-State Actor`, `Observer`, `UN Entity`, `Intergovernmental Organization`, `Government Entity`, and `Secretariat`. You can also add custom categories from the Manage Speakers page.
 
 ## Tests
 

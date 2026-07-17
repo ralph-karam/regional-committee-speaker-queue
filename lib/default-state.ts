@@ -21,6 +21,7 @@ export const defaultSettings: MeetingSettings = {
 
 export const createInitialState = (): QueueState => ({
   speakers: sampleSpeakers,
+  customCategories: [],
   queue: [],
   completed: [],
   settings: defaultSettings,
