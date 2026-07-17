@@ -33,6 +33,8 @@ export interface QueueEntry {
   requestType: RequestType;
   requestedAt: string;
   allocatedSeconds: number;
+  elapsedSeconds?: number;
+  timerRunning?: boolean;
   status: "waiting" | "hold" | "speaking" | "unavailable";
   note?: string;
 }

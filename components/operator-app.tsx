@@ -27,7 +27,7 @@ import { defaultDurationForSpeaker, speakerById } from "@/lib/queue-logic";
 import { sessionTitles } from "@/lib/session-titles";
 import { useQueueStore } from "@/lib/store";
 import { RequestType, SpeakerCategory } from "@/lib/types";
-import { elapsedSince } from "@/lib/timer-logic";
+import { elapsedForEntry } from "@/lib/timer-logic";
 
 const defaultRequestType: RequestType = "General intervention";
 
@@ -68,8 +68,8 @@ export function OperatorApp() {
         event.preventDefault();
         searchRef.current?.focus();
       }
-      if (event.key.toLowerCase() === "n") store.goToNext(elapsedSince(store.currentEntry?.requestedAt));
-      if (event.key.toLowerCase() === "e") store.endCurrent(elapsedSince(store.currentEntry?.requestedAt));
+      if (event.key.toLowerCase() === "n") store.goToNext(elapsedForEntry(store.currentEntry));
+      if (event.key.toLowerCase() === "e") store.endCurrent(elapsedForEntry(store.currentEntry));
       if (event.key.toLowerCase() === "f") window.open("/display", "_blank");
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") store.undo();
     };
@@ -252,9 +252,14 @@ export function OperatorApp() {
                     <p className="mt-2 break-words text-lg font-semibold text-unblue [overflow-wrap:anywhere]">{currentSpeaker.category}</p>
                     {store.currentEntry?.note && <p className="mt-3 rounded-md bg-white p-3 text-sm dark:bg-slate-900">{store.currentEntry.note}</p>}
                   </div>
-                  <SpeakerTimer durationSeconds={store.currentEntry?.allocatedSeconds ?? store.settings.defaultDurationSeconds} activeKey={store.currentEntry?.id} />
+                  <SpeakerTimer
+                    entry={store.currentEntry}
+                    durationSeconds={store.currentEntry?.allocatedSeconds ?? store.settings.defaultDurationSeconds}
+                    onToggle={store.toggleCurrentTimer}
+                    onReset={store.resetCurrentTimer}
+                  />
                   <div className="grid gap-2">
-                    <Button type="button" size="lg" onClick={() => store.goToNext(elapsedSince(store.currentEntry?.requestedAt))} disabled={!nextEntry}>Next speaker</Button>
+                    <Button type="button" size="lg" onClick={() => store.goToNext(elapsedForEntry(store.currentEntry))} disabled={!nextEntry}>Next speaker</Button>
                   </div>
                 </div>
               ) : (

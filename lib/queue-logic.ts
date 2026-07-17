@@ -1,4 +1,5 @@
 import { CompletedIntervention, QueueEntry, QueueState, RequestType, Speaker, SpeakerStatus } from "@/lib/types";
+import { elapsedForEntry } from "@/lib/timer-logic";
 
 const now = () => new Date().toISOString();
 const id = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -37,6 +38,8 @@ export function addToQueue(state: QueueState, speakerId: string, requestType: Re
     requestType,
     requestedAt: now(),
     allocatedSeconds: allocatedSeconds ?? defaultDurationForSpeaker(state, speaker),
+    elapsedSeconds: 0,
+    timerRunning: true,
     status: "waiting"
   };
 
@@ -84,7 +87,7 @@ export function startNextSpeaker(state: QueueState): QueueState {
     ...state,
     speakers: setSpeakerStatus(state.speakers, next.speakerId, "speaking"),
     queue: state.queue.filter((entry) => entry.id !== next.id),
-    currentEntry: { ...next, status: "speaking", requestedAt: now() },
+    currentEntry: { ...next, status: "speaking", requestedAt: now(), elapsedSeconds: 0, timerRunning: true },
     activity: [{ id: id("activity"), message: "Intervention started", createdAt: now() }, ...state.activity].slice(0, 12)
   };
 }
@@ -97,7 +100,7 @@ export function endCurrentSpeaker(state: QueueState, elapsedSeconds: number): Qu
     requestType: state.currentEntry.requestType,
     startedAt: state.currentEntry.requestedAt,
     endedAt: now(),
-    durationSeconds: elapsedSeconds,
+    durationSeconds: elapsedSeconds || elapsedForEntry(state.currentEntry),
     note: state.currentEntry.note
   };
   return {

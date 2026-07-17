@@ -15,6 +15,7 @@ import {
 } from "@/lib/queue-logic";
 import { activeQueueService } from "@/lib/supabase-service";
 import { mergeCategories } from "@/lib/categories";
+import { elapsedForEntry } from "@/lib/timer-logic";
 import { MeetingSettings, QueueEntry, QueueState, RequestType, Speaker } from "@/lib/types";
 
 type QueueStore = QueueState & {
@@ -31,6 +32,8 @@ type QueueStore = QueueState & {
   startNext: () => void;
   goToNext: (elapsedSeconds?: number) => void;
   endCurrent: (elapsedSeconds: number) => void;
+  toggleCurrentTimer: () => void;
+  resetCurrentTimer: () => void;
   returnCurrent: () => void;
   skipCurrent: () => void;
   restoreCompletedEntry: (completedId: string) => void;
@@ -74,6 +77,23 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     return push(current, startNextSpeaker(ended));
   }),
   endCurrent: (elapsedSeconds) => set((current) => push(current, endCurrentSpeaker(current, elapsedSeconds))),
+  toggleCurrentTimer: () => set((current) => {
+    if (!current.currentEntry) return current;
+    const timerRunning = current.currentEntry.timerRunning !== false;
+    return push(current, {
+      ...current,
+      currentEntry: timerRunning
+        ? { ...current.currentEntry, elapsedSeconds: elapsedForEntry(current.currentEntry), timerRunning: false }
+        : { ...current.currentEntry, requestedAt: new Date().toISOString(), timerRunning: true }
+    }, false);
+  }),
+  resetCurrentTimer: () => set((current) => {
+    if (!current.currentEntry) return current;
+    return push(current, {
+      ...current,
+      currentEntry: { ...current.currentEntry, requestedAt: new Date().toISOString(), elapsedSeconds: 0, timerRunning: true }
+    }, false);
+  }),
   returnCurrent: () => set((current) => push(current, returnCurrentToQueue(current))),
   skipCurrent: () => set((current) => (current.currentEntry ? push(current, { ...current, currentEntry: undefined, activity: [{ id: `activity-${Date.now()}`, message: "Current speaker skipped", createdAt: new Date().toISOString() }, ...current.activity].slice(0, 12) }) : current)),
   restoreCompletedEntry: (completedId) => set((current) => push(current, restoreCompleted(current, completedId))),

@@ -6,7 +6,8 @@ import { Clock } from "@/components/clock";
 import { Button, cn } from "@/components/ui";
 import { speakerById } from "@/lib/queue-logic";
 import { useQueueStore } from "@/lib/store";
-import { formatRemaining, remainingFromStart, timerWarning } from "@/lib/timer-logic";
+import { formatRemaining, remainingForEntry, timerWarning } from "@/lib/timer-logic";
+import { QueueEntry } from "@/lib/types";
 
 export function DisplayApp() {
   const store = useQueueStore();
@@ -38,7 +39,7 @@ export function DisplayApp() {
                 <h2 className="mt-4 text-7xl font-bold leading-tight">{current.fullName}</h2>
                 <p className="mt-4 text-4xl text-slate-100">{current.category}</p>
                 {store.settings.showTimerOnDisplay && (
-                  <DisplayTimer startedAt={store.currentEntry?.requestedAt} allocatedSeconds={store.currentEntry?.allocatedSeconds ?? store.settings.defaultDurationSeconds} />
+                  <DisplayTimer entry={store.currentEntry} fallbackSeconds={store.settings.defaultDurationSeconds} />
                 )}
               </>
             ) : (
@@ -86,14 +87,15 @@ export function DisplayApp() {
   );
 }
 
-function DisplayTimer({ startedAt, allocatedSeconds }: { startedAt?: string; allocatedSeconds: number }) {
-  const [remaining, setRemaining] = useState(() => remainingFromStart(startedAt, allocatedSeconds));
+function DisplayTimer({ entry, fallbackSeconds }: { entry?: QueueEntry; fallbackSeconds: number }) {
+  const [remaining, setRemaining] = useState(() => remainingForEntry(entry, fallbackSeconds));
 
   useEffect(() => {
-    setRemaining(remainingFromStart(startedAt, allocatedSeconds));
-    const timer = window.setInterval(() => setRemaining(remainingFromStart(startedAt, allocatedSeconds)), 1000);
+    setRemaining(remainingForEntry(entry, fallbackSeconds));
+    if (entry?.timerRunning === false) return;
+    const timer = window.setInterval(() => setRemaining(remainingForEntry(entry, fallbackSeconds)), 1000);
     return () => window.clearInterval(timer);
-  }, [startedAt, allocatedSeconds]);
+  }, [entry, fallbackSeconds]);
 
   const level = timerWarning(remaining);
 

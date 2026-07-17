@@ -1,3 +1,5 @@
+import type { QueueEntry } from "@/lib/types";
+
 export function timerWarning(remainingSeconds: number) {
   if (remainingSeconds < 0) return "expired";
   if (remainingSeconds <= 10) return "final";
@@ -19,4 +21,15 @@ export function elapsedSince(startedAt?: string, nowMs = Date.now()) {
 
 export function remainingFromStart(startedAt: string | undefined, allocatedSeconds: number, nowMs = Date.now()) {
   return allocatedSeconds - elapsedSince(startedAt, nowMs);
+}
+
+export function elapsedForEntry(entry?: Pick<QueueEntry, "requestedAt" | "elapsedSeconds" | "timerRunning">, nowMs = Date.now()) {
+  if (!entry) return 0;
+  const storedElapsed = entry.elapsedSeconds ?? 0;
+  if (entry.timerRunning === false) return storedElapsed;
+  return storedElapsed + elapsedSince(entry.requestedAt, nowMs);
+}
+
+export function remainingForEntry(entry: QueueEntry | undefined, fallbackSeconds: number, nowMs = Date.now()) {
+  return (entry?.allocatedSeconds ?? fallbackSeconds) - elapsedForEntry(entry, nowMs);
 }

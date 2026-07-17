@@ -1,23 +1,36 @@
 "use client";
 
-import { AlertTriangle, Pause, Play } from "lucide-react";
+import { AlertTriangle, Pause, Play, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button, cn } from "@/components/ui";
-import { formatRemaining, timerWarning } from "@/lib/timer-logic";
+import { elapsedForEntry, formatRemaining, timerWarning } from "@/lib/timer-logic";
+import { QueueEntry } from "@/lib/types";
 
-export function SpeakerTimer({ durationSeconds, activeKey, onExpired }: { durationSeconds: number; activeKey?: string; onExpired?: () => void }) {
-  const [elapsed, setElapsed] = useState(0);
-  const [running, setRunning] = useState(false);
+export function SpeakerTimer({
+  entry,
+  durationSeconds,
+  onToggle,
+  onReset,
+  onExpired
+}: {
+  entry?: QueueEntry;
+  durationSeconds: number;
+  onToggle: () => void;
+  onReset: () => void;
+  onExpired?: () => void;
+}) {
+  const [tick, setTick] = useState(() => Date.now());
+  const elapsed = elapsedForEntry(entry, tick);
   const remaining = durationSeconds - elapsed;
+  const running = entry ? entry.timerRunning !== false : false;
 
   useEffect(() => {
-    setElapsed(0);
-    setRunning(Boolean(activeKey));
-  }, [activeKey]);
+    setTick(Date.now());
+  }, [entry?.id, entry?.requestedAt, entry?.elapsedSeconds, entry?.timerRunning]);
 
   useEffect(() => {
     if (!running) return;
-    const timer = window.setInterval(() => setElapsed((value) => value + 1), 1000);
+    const timer = window.setInterval(() => setTick(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [running]);
 
@@ -42,10 +55,14 @@ export function SpeakerTimer({ durationSeconds, activeKey, onExpired }: { durati
         </div>
         <div className="mt-2 text-6xl font-bold tabular-nums">{formatRemaining(remaining)}</div>
       </div>
-      <div className="grid gap-2">
-        <Button type="button" variant="secondary" onClick={() => setRunning((value) => !value)} disabled={!activeKey}>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Button type="button" variant="secondary" onClick={onToggle} disabled={!entry}>
           {running ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           {running ? "Pause speaking" : "Resume speaking"}
+        </Button>
+        <Button type="button" variant="secondary" onClick={onReset} disabled={!entry}>
+          <RotateCcw className="h-4 w-4" />
+          Reset timer
         </Button>
       </div>
       <input type="hidden" data-testid="elapsed-seconds" value={elapsed} />
