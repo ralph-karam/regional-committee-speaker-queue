@@ -13,7 +13,6 @@ export const defaultSettings: MeetingSettings = {
   warningThirtySeconds: true,
   warningTenSeconds: true,
   automaticPromotion: true,
-  delegateRequestsEnabled: true,
   soundOnRequest: false,
   soundOnExpired: false,
   density: "comfortable",

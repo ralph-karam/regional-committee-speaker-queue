@@ -6,7 +6,6 @@ import {
   ClipboardList,
   Download,
   ExternalLink,
-  FileUp,
   History,
   Mic2,
   Moon,
@@ -23,8 +22,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Clock } from "@/components/clock";
 import { SpeakerTimer } from "@/components/timer";
 import { Badge, Button, Card, Field, inputClass } from "@/components/ui";
-import { parseSpeakerCsv } from "@/lib/csv";
-import { averageWaitMinutes, defaultDurationForSpeaker, serializeCsv, speakerById } from "@/lib/queue-logic";
+import { averageWaitMinutes, defaultDurationForSpeaker, speakerById } from "@/lib/queue-logic";
 import { useQueueStore } from "@/lib/store";
 import { RequestType, Speaker, SpeakerCategory } from "@/lib/types";
 import { elapsedSince } from "@/lib/timer-logic";
@@ -39,7 +37,6 @@ export function OperatorApp() {
   const [requestType, setRequestType] = useState<RequestType>("General intervention");
   const [customDurationSeconds, setCustomDurationSeconds] = useState("auto");
   const [historyQuery, setHistoryQuery] = useState("");
-  const [csvText, setCsvText] = useState("");
   const [mobileTab, setMobileTab] = useState("speakers");
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -70,29 +67,12 @@ export function OperatorApp() {
       }
       if (event.key.toLowerCase() === "n") store.startNext();
       if (event.key.toLowerCase() === "e") store.endCurrent(elapsedSince(store.currentEntry?.requestedAt));
-      if (event.key.toLowerCase() === "a") document.getElementById("new-speaker-name")?.focus();
       if (event.key.toLowerCase() === "f") window.open("/display", "_blank");
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") store.undo();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [store]);
-
-  const addSpeaker = (formData: FormData) => {
-    const fullName = String(formData.get("fullName") ?? "").trim();
-    const delegation = String(formData.get("delegation") ?? "").trim();
-    if (!fullName || !delegation) return;
-    const speaker: Speaker = {
-      id: `manual-${Date.now()}`,
-      fullName,
-      delegation,
-      title: String(formData.get("title") ?? ""),
-      category: String(formData.get("category")) as SpeakerCategory,
-      preferredLanguage: String(formData.get("preferredLanguage") ?? "English"),
-      status: "available"
-    };
-    store.upsertSpeaker(speaker);
-  };
 
   const download = (content: string, filename: string, type = "text/csv") => {
     const url = URL.createObjectURL(new Blob([content], { type }));
@@ -120,8 +100,8 @@ export function OperatorApp() {
             <Link href="/display" target="_blank" className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 font-semibold hover:bg-mist dark:border-slate-700 dark:bg-slate-900">
               <ExternalLink className="h-4 w-4" /> Display
             </Link>
-            <Link href="/request" target="_blank" className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 font-semibold hover:bg-mist dark:border-slate-700 dark:bg-slate-900">
-              <Users className="h-4 w-4" /> Delegate
+            <Link href="/speakers" className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 font-semibold hover:bg-mist dark:border-slate-700 dark:bg-slate-900">
+              <Users className="h-4 w-4" /> Manage speakers
             </Link>
             <Button type="button" variant="secondary" onClick={() => store.updateSettings({ darkMode: !store.settings.darkMode })}><Moon className="h-4 w-4" /> Theme</Button>
           </div>
@@ -130,10 +110,10 @@ export function OperatorApp() {
 
       <section className="mx-auto grid max-w-[1800px] gap-4 px-4 py-4">
         <Card className="p-4">
-          <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr_1fr]">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
             <div>
               <div className="mb-3 flex items-center gap-2 text-lg font-bold"><Settings className="h-5 w-5 text-unblue" /> Meeting setup</div>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <Field label="Meeting title"><input className={inputClass} value={store.settings.meetingTitle} onChange={(event) => store.updateSettings({ meetingTitle: event.target.value })} /></Field>
                 <Field label="Session title"><input className={inputClass} value={store.settings.sessionTitle} onChange={(event) => store.updateSettings({ sessionTitle: event.target.value })} /></Field>
                 <Field label="Date"><input className={inputClass} type="date" value={store.settings.meetingDate} onChange={(event) => store.updateSettings({ meetingDate: event.target.value })} /></Field>
@@ -147,27 +127,9 @@ export function OperatorApp() {
                 </label>
               </div>
             </div>
-
-            <form action={addSpeaker} className="grid gap-3">
-              <div className="flex items-center gap-2 text-lg font-bold"><Plus className="h-5 w-5 text-unblue" /> Add speaker</div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Full name"><input id="new-speaker-name" name="fullName" className={inputClass} required /></Field>
-                <Field label="Delegation"><input name="delegation" className={inputClass} required /></Field>
-                <Field label="Title"><input name="title" className={inputClass} /></Field>
-                <Field label="Language"><input name="preferredLanguage" className={inputClass} defaultValue="English" /></Field>
-                <Field label="Category"><select name="category" className={inputClass} defaultValue="Member State">{categories.filter((item) => item !== "All").map((item) => <option key={item}>{item}</option>)}</select></Field>
-                <Button className="self-end" type="submit"><Plus className="h-4 w-4" /> Add</Button>
-              </div>
-            </form>
-
-            <div className="grid gap-3">
-              <div className="flex items-center gap-2 text-lg font-bold"><FileUp className="h-5 w-5 text-unblue" /> CSV tools</div>
-              <textarea className={`${inputClass} min-h-24`} value={csvText} onChange={(event) => setCsvText(event.target.value)} placeholder="Paste CSV rows to import speakers" />
-              <div className="grid grid-cols-2 gap-2">
-                <Button type="button" variant="secondary" onClick={() => store.importSpeakers(parseSpeakerCsv(csvText))} disabled={!csvText.trim()}><FileUp className="h-4 w-4" /> Import</Button>
-                <Button type="button" variant="secondary" onClick={() => download(serializeCsv(store.speakers), "regional-committee-speakers.csv")}><Download className="h-4 w-4" /> Export</Button>
-              </div>
-            </div>
+            <Link href="/speakers" className="inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-md border border-slate-200 bg-white px-4 font-semibold hover:bg-mist dark:border-slate-700 dark:bg-slate-900">
+              <Users className="h-4 w-4" /> Manage list
+            </Link>
           </div>
         </Card>
 
@@ -238,7 +200,7 @@ export function OperatorApp() {
                 </div>
               </div>
               <div className="grid gap-2">
-                {!store.queue.length && <Empty title="No waiting speakers" detail="Add a delegate from the directory or use the delegate request page." />}
+                {!store.queue.length && <Empty title="No waiting speakers" detail="Add a speaker from the directory or manage the speaker list on the separate page." />}
                 {store.queue.map((entry, index) => {
                   const speaker = speakerById(store, entry.speakerId);
                   return (

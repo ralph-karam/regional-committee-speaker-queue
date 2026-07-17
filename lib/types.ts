@@ -65,7 +65,6 @@ export interface MeetingSettings {
   warningThirtySeconds: boolean;
   warningTenSeconds: boolean;
   automaticPromotion: boolean;
-  delegateRequestsEnabled: boolean;
   soundOnRequest: boolean;
   soundOnExpired: boolean;
   density: "comfortable" | "compact";

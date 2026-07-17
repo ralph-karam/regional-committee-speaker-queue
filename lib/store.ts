@@ -68,7 +68,13 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
   restoreCompletedEntry: (completedId) => set((current) => push(current, restoreCompleted(current, completedId))),
   updateSettings: (settings) => set((current) => push(current, { ...current, settings: { ...current.settings, ...settings } }, false)),
   upsertSpeaker: (speaker) => set((current) => push(current, { ...current, speakers: current.speakers.some((item) => item.id === speaker.id) ? current.speakers.map((item) => (item.id === speaker.id ? speaker : item)) : [...current.speakers, speaker] })),
-  deleteSpeaker: (speakerId) => set((current) => push(current, { ...current, speakers: current.speakers.filter((speaker) => speaker.id !== speakerId), queue: current.queue.filter((entry) => entry.speakerId !== speakerId) })),
+  deleteSpeaker: (speakerId) => set((current) => push(current, {
+    ...current,
+    speakers: current.speakers.filter((speaker) => speaker.id !== speakerId),
+    queue: current.queue.filter((entry) => entry.speakerId !== speakerId),
+    currentEntry: current.currentEntry?.speakerId === speakerId ? undefined : current.currentEntry,
+    completed: current.completed.filter((entry) => entry.speakerId !== speakerId)
+  })),
   importSpeakers: (speakers) => set((current) => push(current, { ...current, speakers })),
   clearQueue: () => set((current) => push(current, { ...current, queue: [], currentEntry: undefined, speakers: current.speakers.map((speaker) => (speaker.status === "queued" || speaker.status === "speaking" ? { ...speaker, status: "available" } : speaker)) })),
   clearHistory: () => set((current) => push(current, { ...current, completed: [] })),

@@ -13,7 +13,7 @@ Open:
 
 - `http://localhost:3000` for the operator setup and control console
 - `http://localhost:3000/display` for the room projection display
-- `http://localhost:3000/request` for delegate self-service requests
+- `http://localhost:3000/speakers` for adding speakers, deleting speakers, and CSV import/export
 
 ## What It Includes
 
@@ -22,7 +22,7 @@ Open:
 - Active queue with hold, restore, unavailable, notes, reorder, remove, top-of-queue confirmation, and clear confirmation
 - Now Speaking panel with timer warnings, return, skip, and end controls
 - Public display page with no administrative controls or private notes
-- Delegate request page with queue-position feedback
+- Separate speaker-management page with add, delete, CSV import, and CSV export tools
 - Completed intervention history with restore, CSV export, and clear confirmation
 - Local-storage persistence, saved-status indicator, undo, dark mode, density setting, keyboard shortcuts, and activity log
 - Sample fictional speaker data
@@ -31,7 +31,6 @@ Open:
 ## Keyboard Shortcuts
 
 - `/` focuses speaker search
-- `A` focuses the add-speaker form
 - `N` starts the next speaker
 - `E` ends the current intervention
 - `Cmd/Ctrl + Z` undoes the most recent queue action
