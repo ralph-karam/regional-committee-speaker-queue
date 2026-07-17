@@ -212,13 +212,13 @@ export function OperatorApp() {
                         <div>
                           <div className="text-sm font-bold text-unblue">Position {index + 1}</div>
                           <h3 className="text-lg font-bold">{speaker?.fullName}</h3>
-                          <p className="text-sm text-slate-600 dark:text-slate-300">{speaker?.delegation} · requested {new Date(entry.requestedAt).toLocaleTimeString()}</p>
+                          <p className="text-sm font-semibold text-unblue">{speaker?.category}</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-300">Requested {new Date(entry.requestedAt).toLocaleTimeString()}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <Badge tone={entry.status === "hold" ? "amber" : entry.status === "unavailable" ? "red" : "blue"}>{entry.status}</Badge>
                           <Badge>{entry.requestType}</Badge>
                           <Badge>{formatDuration(entry.allocatedSeconds)}</Badge>
-                          <Badge>{speaker?.preferredLanguage}</Badge>
                         </div>
                       </div>
                       <label className="grid gap-1 text-sm font-semibold text-slate-700 dark:text-slate-200">
@@ -249,8 +249,7 @@ export function OperatorApp() {
                   <div className="rounded-lg border border-blue-100 bg-blue-50 p-5 dark:border-blue-900 dark:bg-blue-950">
                     <p className="text-sm font-bold uppercase text-unblue">On the floor</p>
                     <h3 className="mt-1 break-words text-2xl font-bold leading-tight [overflow-wrap:anywhere] xl:text-3xl">{currentSpeaker.fullName}</h3>
-                    <p className="mt-2 break-words text-slate-700 [overflow-wrap:anywhere] dark:text-slate-200">{currentSpeaker.delegation} · {currentSpeaker.title}</p>
-                    <div className="mt-3 flex flex-wrap gap-2"><Badge tone="blue">{store.currentEntry?.requestType}</Badge><Badge>{currentSpeaker.preferredLanguage}</Badge></div>
+                    <p className="mt-2 break-words text-lg font-semibold text-unblue [overflow-wrap:anywhere]">{currentSpeaker.category}</p>
                     {store.currentEntry?.note && <p className="mt-3 rounded-md bg-white p-3 text-sm dark:bg-slate-900">{store.currentEntry.note}</p>}
                   </div>
                   <SpeakerTimer durationSeconds={store.currentEntry?.allocatedSeconds ?? store.settings.defaultDurationSeconds} activeKey={store.currentEntry?.id} />

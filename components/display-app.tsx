@@ -3,7 +3,7 @@
 import { Maximize2, Mic2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Clock } from "@/components/clock";
-import { Button, Badge, cn } from "@/components/ui";
+import { Button, cn } from "@/components/ui";
 import { speakerById } from "@/lib/queue-logic";
 import { useQueueStore } from "@/lib/store";
 import { formatRemaining, remainingFromStart, timerWarning } from "@/lib/timer-logic";
@@ -36,9 +36,7 @@ export function DisplayApp() {
             {current ? (
               <>
                 <h2 className="mt-4 text-7xl font-bold leading-tight">{current.fullName}</h2>
-                <p className="mt-4 text-4xl text-slate-100">{current.delegation}</p>
-                <p className="mt-3 text-2xl text-slate-300">{current.title}</p>
-                <div className="mt-8 flex flex-wrap gap-3"><Badge tone="blue">{store.currentEntry?.requestType}</Badge><Badge>{current.preferredLanguage}</Badge></div>
+                <p className="mt-4 text-4xl text-slate-100">{current.category}</p>
                 {store.settings.showTimerOnDisplay && (
                   <DisplayTimer startedAt={store.currentEntry?.requestedAt} allocatedSeconds={store.currentEntry?.allocatedSeconds ?? store.settings.defaultDurationSeconds} />
                 )}
@@ -54,7 +52,7 @@ export function DisplayApp() {
               {upcoming[0] ? (
                 <>
                   <h3 className="mt-3 text-4xl font-bold">{speakerById(store, upcoming[0].speakerId)?.fullName}</h3>
-                  <p className="mt-2 text-2xl text-slate-300">{speakerById(store, upcoming[0].speakerId)?.delegation}</p>
+                  <p className="mt-2 text-2xl text-slate-300">{speakerById(store, upcoming[0].speakerId)?.category}</p>
                 </>
               ) : <p className="mt-6 text-3xl text-slate-400">No speaker waiting</p>}
             </div>
@@ -68,7 +66,7 @@ export function DisplayApp() {
                       <div className="text-2xl font-bold text-blue-200">{index + 2}</div>
                       <div>
                         <div className="text-2xl font-bold">{speaker?.fullName}</div>
-                        <div className="text-lg text-slate-300">{speaker?.delegation}</div>
+                        <div className="text-lg text-slate-300">{speaker?.category}</div>
                       </div>
                     </div>
                   );
