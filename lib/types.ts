@@ -6,6 +6,7 @@ export type SpeakerCategory =
   | "Observer"
   | "UN Entity"
   | "Intergovernmental Organization"
+  | "Government Entity"
   | "Secretariat";
 
 export type RequestType =

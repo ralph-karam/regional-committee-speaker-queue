@@ -28,7 +28,7 @@ import { useQueueStore } from "@/lib/store";
 import { RequestType, SpeakerCategory } from "@/lib/types";
 import { elapsedSince } from "@/lib/timer-logic";
 
-const categories: Array<SpeakerCategory | "All"> = ["All", "Member State", "Non-State Actor", "Observer", "UN Entity", "Intergovernmental Organization", "Secretariat"];
+const categories: Array<SpeakerCategory | "All"> = ["All", "Member State", "Non-State Actor", "Observer", "UN Entity", "Intergovernmental Organization", "Government Entity", "Secretariat"];
 const defaultRequestType: RequestType = "General intervention";
 
 export function OperatorApp() {

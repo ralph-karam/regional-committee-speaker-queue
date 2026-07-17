@@ -9,7 +9,7 @@ import { serializeCsv } from "@/lib/queue-logic";
 import { useQueueStore } from "@/lib/store";
 import { Speaker, SpeakerCategory } from "@/lib/types";
 
-const categories: SpeakerCategory[] = ["Member State", "Non-State Actor", "Observer", "UN Entity", "Intergovernmental Organization", "Secretariat"];
+const categories: SpeakerCategory[] = ["Member State", "Non-State Actor", "Observer", "UN Entity", "Intergovernmental Organization", "Government Entity", "Secretariat"];
 
 export function SpeakerManagementApp() {
   const store = useQueueStore();
@@ -95,7 +95,7 @@ export function SpeakerManagementApp() {
               className={`${inputClass} min-h-40 w-full`}
               value={csvText}
               onChange={(event) => setCsvText(event.target.value)}
-              placeholder={"Paste rows such as:\nMS,Lebanon\nNSA,International Health Coalition"}
+              placeholder={"Paste rows such as:\nMS,Lebanon\nObserver MS,Algeria\nIG,Organization of Islamic Cooperation (OIC)\nUN+Specialized+Related Agencies,UNICEF\nNSA,Gates Foundation\nGovernment Entity,Saudi Fund for Development"}
             />
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <Button type="button" variant="secondary" onClick={importCsv} disabled={!csvText.trim()}><FileUp className="h-4 w-4" /> Import</Button>

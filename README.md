@@ -44,14 +44,15 @@ Speaker import accepts the compact meeting-list format:
 
 ```csv
 MS,Lebanon
+Observer MS,Algeria
+IG,Organization of Islamic Cooperation (OIC)
+UN+Specialized+Related Agencies,UNICEF Regional Office
 NSA,International Health Coalition
-Observer,Regional Observer Mission
-UN,UNICEF Regional Office
-IGO,Pacific Health Forum
+Government Entity,Saudi Fund for Development
 Secretariat,Regional Committee Secretariat
 ```
 
-The first column is the entity type. Supported codes include `MS`, `NSA`, `Observer`, `UN`, `IGO`, and `Secretariat`.
+The first column is the entity type. Supported codes include `MS`, `Observer MS`, `IG`, `UN+Specialized+Related Agencies`, `NSA`, `Government Entity`, and `Secretariat`. Rows can be pasted one per line or as wrapped text; the importer will split recognized entity codes into separate records.
 
 It also accepts the full export format with a header row:
 
@@ -60,7 +61,7 @@ fullName,delegation,title,category,preferredLanguage,status
 "Maya Haddad","Argana","Permanent Representative","Member State","Arabic","available"
 ```
 
-Valid categories are `Member State`, `Non-State Actor`, `Observer`, `UN Entity`, `Intergovernmental Organization`, and `Secretariat`.
+Valid categories are `Member State`, `Non-State Actor`, `Observer`, `UN Entity`, `Intergovernmental Organization`, `Government Entity`, and `Secretariat`.
 
 ## Tests
 

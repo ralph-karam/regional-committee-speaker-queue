@@ -108,6 +108,30 @@ describe("speaker CSV parsing", () => {
     });
   });
 
+  it("imports real agenda entity codes without falling back to Member State", () => {
+    const speakers = parseSpeakerCsv([
+      "Observer MS,Algeria",
+      "IG,Organization of Islamic Cooperation (OIC)",
+      "UN+Specialized+Related Agencies,\"International Civil Aviation Organization (ICAO), Middle East Office\"",
+      "Government Entity,Abu Dhabi Fund for Development  (ADFD)"
+    ].join("\n"));
+
+    expect(speakers.map((speaker) => speaker.category)).toEqual([
+      "Observer",
+      "Intergovernmental Organization",
+      "UN Entity",
+      "Government Entity"
+    ]);
+    expect(speakers[1].fullName).toBe("Organization of Islamic Cooperation (OIC)");
+    expect(speakers[2].fullName).toBe("International Civil Aviation Organization (ICAO), Middle East Office");
+  });
+
+  it("splits compact rows pasted as one wrapped line", () => {
+    const speakers = parseSpeakerCsv("MS,KINGDOM OF BAHRAIN MS,DJIBOUTI MS,EGYPT NSA,Gates Foundation");
+    expect(speakers.map((speaker) => speaker.fullName)).toEqual(["KINGDOM OF BAHRAIN", "DJIBOUTI", "EGYPT", "Gates Foundation"]);
+    expect(speakers.map((speaker) => speaker.category)).toEqual(["Member State", "Member State", "Member State", "Non-State Actor"]);
+  });
+
   it("still imports the full CSV format with a header", () => {
     const speakers = parseSpeakerCsv('fullName,delegation,title,category,preferredLanguage,status\n"Maya Haddad","Argana","Permanent Representative","Member State","Arabic","available"');
     expect(speakers[0]).toMatchObject({
