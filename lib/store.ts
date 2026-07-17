@@ -22,7 +22,7 @@ type QueueStore = QueueState & {
   undoStack: QueueState[];
   hydrate: () => void;
   persist: (state: QueueState) => void;
-  addSpeakerToQueue: (speakerId: string, requestType?: RequestType) => void;
+  addSpeakerToQueue: (speakerId: string, requestType?: RequestType, allocatedSeconds?: number) => void;
   removeEntry: (entryId: string) => void;
   moveEntry: (entryId: string, direction: "up" | "down" | "top") => void;
   patchEntry: (entryId: string, patch: Partial<QueueEntry>) => void;
@@ -57,7 +57,7 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     set({ ...loaded, hydrated: true, undoStack: [], lastSavedAt: new Date().toISOString() });
   },
   persist: (state) => localQueueService.save(state),
-  addSpeakerToQueue: (speakerId, requestType) => set((current) => push(current, addToQueue(current, speakerId, requestType))),
+  addSpeakerToQueue: (speakerId, requestType, allocatedSeconds) => set((current) => push(current, addToQueue(current, speakerId, requestType, allocatedSeconds))),
   removeEntry: (entryId) => set((current) => push(current, removeFromQueue(current, entryId))),
   moveEntry: (entryId, direction) => set((current) => push(current, reorderQueue(current, entryId, direction))),
   patchEntry: (entryId, patch) => set((current) => push(current, updateEntry(current, entryId, patch))),

@@ -1,10 +1,12 @@
 "use client";
 
 import { Maximize2, Mic2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Clock } from "@/components/clock";
-import { Button, Badge } from "@/components/ui";
+import { Button, Badge, cn } from "@/components/ui";
 import { speakerById } from "@/lib/queue-logic";
 import { useQueueStore } from "@/lib/store";
+import { formatRemaining, remainingFromStart, timerWarning } from "@/lib/timer-logic";
 
 export function DisplayApp() {
   const store = useQueueStore();
@@ -37,6 +39,9 @@ export function DisplayApp() {
                 <p className="mt-4 text-4xl text-slate-100">{current.delegation}</p>
                 <p className="mt-3 text-2xl text-slate-300">{current.title}</p>
                 <div className="mt-8 flex flex-wrap gap-3"><Badge tone="blue">{store.currentEntry?.requestType}</Badge><Badge>{current.preferredLanguage}</Badge></div>
+                {store.settings.showTimerOnDisplay && (
+                  <DisplayTimer startedAt={store.currentEntry?.requestedAt} allocatedSeconds={store.currentEntry?.allocatedSeconds ?? store.settings.defaultDurationSeconds} />
+                )}
               </>
             ) : (
               <div className="py-20 text-5xl font-bold text-slate-300">Awaiting next speaker</div>
@@ -80,5 +85,24 @@ export function DisplayApp() {
         </footer>
       </div>
     </main>
+  );
+}
+
+function DisplayTimer({ startedAt, allocatedSeconds }: { startedAt?: string; allocatedSeconds: number }) {
+  const [remaining, setRemaining] = useState(() => remainingFromStart(startedAt, allocatedSeconds));
+
+  useEffect(() => {
+    setRemaining(remainingFromStart(startedAt, allocatedSeconds));
+    const timer = window.setInterval(() => setRemaining(remainingFromStart(startedAt, allocatedSeconds)), 1000);
+    return () => window.clearInterval(timer);
+  }, [startedAt, allocatedSeconds]);
+
+  const level = timerWarning(remaining);
+
+  return (
+    <div className={cn("mt-8 rounded-lg border p-6", level === "expired" ? "border-red-400 bg-red-500/20 text-red-100" : level === "final" || level === "warning" ? "border-amber-300 bg-amber-400/20 text-amber-100" : "border-white/20 bg-white/10 text-white")}>
+      <p className="text-lg font-bold uppercase">{level === "expired" ? "Time expired" : level === "final" ? "Final 10 seconds" : level === "warning" ? "30 seconds remaining" : "Speaking time"}</p>
+      <div className="mt-2 text-7xl font-bold tabular-nums">{formatRemaining(remaining)}</div>
+    </div>
   );
 }

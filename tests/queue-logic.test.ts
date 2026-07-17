@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createInitialState } from "@/lib/default-state";
-import { addToQueue, endCurrentSpeaker, reorderQueue, restoreCompleted, startNextSpeaker } from "@/lib/queue-logic";
+import { addToQueue, defaultDurationForSpeaker, endCurrentSpeaker, reorderQueue, restoreCompleted, startNextSpeaker } from "@/lib/queue-logic";
 import { localQueueService } from "@/lib/storage-service";
 import { formatRemaining, timerWarning } from "@/lib/timer-logic";
 
@@ -14,7 +14,19 @@ describe("queue logic", () => {
     const state = addToQueue(createInitialState(), "sp-argana", "Point of order");
     expect(state.queue).toHaveLength(1);
     expect(state.queue[0].requestType).toBe("Point of order");
+    expect(state.queue[0].allocatedSeconds).toBe(180);
     expect(state.speakers.find((speaker) => speaker.id === "sp-argana")?.status).toBe("queued");
+  });
+
+  it("uses 2 minutes for observers and non-member states by default", () => {
+    const state = createInitialState();
+    const observer = state.speakers.find((speaker) => speaker.category === "Observer");
+    expect(defaultDurationForSpeaker(state, observer)).toBe(120);
+  });
+
+  it("allows a custom speaking time per request", () => {
+    const state = addToQueue(createInitialState(), "sp-argana", "General intervention", 300);
+    expect(state.queue[0].allocatedSeconds).toBe(300);
   });
 
   it("prevents duplicate active requests", () => {

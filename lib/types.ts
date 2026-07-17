@@ -37,6 +37,7 @@ export interface QueueEntry {
   speakerId: string;
   requestType: RequestType;
   requestedAt: string;
+  allocatedSeconds: number;
   status: "waiting" | "hold" | "speaking" | "unavailable";
   note?: string;
 }
@@ -57,6 +58,9 @@ export interface MeetingSettings {
   meetingDate: string;
   room: string;
   defaultDurationSeconds: number;
+  memberStateDurationSeconds: number;
+  nonMemberStateDurationSeconds: number;
+  showTimerOnDisplay: boolean;
   warningThirtySeconds: boolean;
   warningTenSeconds: boolean;
   automaticPromotion: boolean;

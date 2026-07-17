@@ -15,7 +15,15 @@ export const localQueueService: QueueDataService = {
     const saved = window.localStorage.getItem(storageKey);
     if (!saved) return createInitialState();
     try {
-      return { ...createInitialState(), ...JSON.parse(saved) } as QueueState;
+      const initial = createInitialState();
+      const parsed = JSON.parse(saved) as QueueState;
+      return {
+        ...initial,
+        ...parsed,
+        settings: { ...initial.settings, ...parsed.settings },
+        queue: (parsed.queue ?? []).map((entry) => ({ ...entry, allocatedSeconds: entry.allocatedSeconds ?? initial.settings.defaultDurationSeconds })),
+        currentEntry: parsed.currentEntry ? { ...parsed.currentEntry, allocatedSeconds: parsed.currentEntry.allocatedSeconds ?? initial.settings.defaultDurationSeconds } : undefined
+      };
     } catch {
       return createInitialState();
     }

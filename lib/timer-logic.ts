@@ -11,3 +11,12 @@ export function formatRemaining(remainingSeconds: number) {
   const seconds = absolute % 60;
   return `${remainingSeconds < 0 ? "+" : ""}${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
+
+export function elapsedSince(startedAt?: string, nowMs = Date.now()) {
+  if (!startedAt) return 0;
+  return Math.max(0, Math.round((nowMs - new Date(startedAt).getTime()) / 1000));
+}
+
+export function remainingFromStart(startedAt: string | undefined, allocatedSeconds: number, nowMs = Date.now()) {
+  return allocatedSeconds - elapsedSince(startedAt, nowMs);
+}

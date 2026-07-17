@@ -24,9 +24,10 @@ import { Clock } from "@/components/clock";
 import { SpeakerTimer } from "@/components/timer";
 import { Badge, Button, Card, Field, inputClass } from "@/components/ui";
 import { parseSpeakerCsv } from "@/lib/csv";
-import { averageWaitMinutes, serializeCsv, speakerById } from "@/lib/queue-logic";
+import { averageWaitMinutes, defaultDurationForSpeaker, serializeCsv, speakerById } from "@/lib/queue-logic";
 import { useQueueStore } from "@/lib/store";
 import { RequestType, Speaker, SpeakerCategory } from "@/lib/types";
+import { elapsedSince } from "@/lib/timer-logic";
 
 const categories: Array<SpeakerCategory | "All"> = ["All", "Member State", "Observer", "UN Entity", "Intergovernmental Organization", "Secretariat"];
 const requestTypes: RequestType[] = ["General intervention", "Point of order", "Right of reply", "Procedural intervention", "Secretariat clarification", "Other"];
@@ -36,6 +37,7 @@ export function OperatorApp() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<(typeof categories)[number]>("All");
   const [requestType, setRequestType] = useState<RequestType>("General intervention");
+  const [customDurationSeconds, setCustomDurationSeconds] = useState("auto");
   const [historyQuery, setHistoryQuery] = useState("");
   const [csvText, setCsvText] = useState("");
   const [mobileTab, setMobileTab] = useState("speakers");
@@ -67,7 +69,7 @@ export function OperatorApp() {
         searchRef.current?.focus();
       }
       if (event.key.toLowerCase() === "n") store.startNext();
-      if (event.key.toLowerCase() === "e") store.endCurrent(currentElapsed(store.currentEntry?.requestedAt));
+      if (event.key.toLowerCase() === "e") store.endCurrent(elapsedSince(store.currentEntry?.requestedAt));
       if (event.key.toLowerCase() === "a") document.getElementById("new-speaker-name")?.focus();
       if (event.key.toLowerCase() === "f") window.open("/display", "_blank");
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") store.undo();
@@ -136,8 +138,13 @@ export function OperatorApp() {
                 <Field label="Session title"><input className={inputClass} value={store.settings.sessionTitle} onChange={(event) => store.updateSettings({ sessionTitle: event.target.value })} /></Field>
                 <Field label="Date"><input className={inputClass} type="date" value={store.settings.meetingDate} onChange={(event) => store.updateSettings({ meetingDate: event.target.value })} /></Field>
                 <Field label="Room"><input className={inputClass} value={store.settings.room} onChange={(event) => store.updateSettings({ room: event.target.value })} /></Field>
-                <Field label="Default duration"><select className={inputClass} value={store.settings.defaultDurationSeconds} onChange={(event) => store.updateSettings({ defaultDurationSeconds: Number(event.target.value) })}><option value={60}>1 minute</option><option value={120}>2 minutes</option><option value={180}>3 minutes</option><option value={300}>5 minutes</option></select></Field>
+                <Field label="Member State duration"><DurationSelect value={store.settings.memberStateDurationSeconds} onChange={(value) => store.updateSettings({ memberStateDurationSeconds: value, defaultDurationSeconds: value })} /></Field>
+                <Field label="Observer and other duration"><DurationSelect value={store.settings.nonMemberStateDurationSeconds} onChange={(value) => store.updateSettings({ nonMemberStateDurationSeconds: value })} /></Field>
                 <Field label="Density"><select className={inputClass} value={store.settings.density} onChange={(event) => store.updateSettings({ density: event.target.value as "comfortable" | "compact" })}><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select></Field>
+                <label className="flex min-h-11 items-center gap-3 rounded-md border border-slate-200 px-3 text-sm font-semibold dark:border-slate-700">
+                  <input type="checkbox" checked={store.settings.showTimerOnDisplay} onChange={(event) => store.updateSettings({ showTimerOnDisplay: event.target.checked })} />
+                  Show timer on display screen
+                </label>
               </div>
             </div>
 
@@ -181,12 +188,20 @@ export function OperatorApp() {
                 <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-slate-500" /><input ref={searchRef} className={`${inputClass} w-full pl-9`} placeholder="Search name, delegation, title" value={query} onChange={(event) => setQuery(event.target.value)} /></div>
                 <select className={inputClass} value={category} onChange={(event) => setCategory(event.target.value as typeof category)}>{categories.map((item) => <option key={item}>{item}</option>)}</select>
                 <select className={inputClass} value={requestType} onChange={(event) => setRequestType(event.target.value as RequestType)}>{requestTypes.map((item) => <option key={item}>{item}</option>)}</select>
+                <select className={inputClass} value={customDurationSeconds} onChange={(event) => setCustomDurationSeconds(event.target.value)} aria-label="Speaking time">
+                  <option value="auto">Auto time by category</option>
+                  <option value="60">Custom: 1 minute</option>
+                  <option value="120">Custom: 2 minutes</option>
+                  <option value="180">Custom: 3 minutes</option>
+                  <option value="300">Custom: 5 minutes</option>
+                  <option value="600">Custom: 10 minutes</option>
+                </select>
               </div>
               <div className="mt-4 grid max-h-[760px] gap-2 overflow-auto pr-1">
                 {filteredSpeakers.map((speaker) => {
                   const disabled = speaker.status === "queued" || speaker.status === "speaking" || speaker.status === "unavailable";
                   return (
-                    <article key={speaker.id} onDoubleClick={() => store.addSpeakerToQueue(speaker.id, requestType)} className="grid gap-2 rounded-md border border-slate-200 p-3 dark:border-slate-800">
+                    <article key={speaker.id} onDoubleClick={() => store.addSpeakerToQueue(speaker.id, requestType, selectedDuration(speaker, store, customDurationSeconds))} className="grid gap-2 rounded-md border border-slate-200 p-3 dark:border-slate-800">
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <h3 className="font-bold">{speaker.fullName}</h3>
@@ -194,9 +209,9 @@ export function OperatorApp() {
                         </div>
                         <Badge tone={speaker.status === "available" ? "green" : speaker.status === "unavailable" ? "red" : "amber"}>{speaker.status}</Badge>
                       </div>
-                      <div className="flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300"><span>{speaker.category}</span><span>{speaker.preferredLanguage}</span></div>
+                      <div className="flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300"><span>{speaker.category}</span><span>{speaker.preferredLanguage}</span><span>{formatDuration(selectedDuration(speaker, store, customDurationSeconds))}</span></div>
                       <div className="grid grid-cols-[1fr_auto] gap-2">
-                        <Button type="button" size="sm" disabled={disabled} onClick={() => store.addSpeakerToQueue(speaker.id, requestType)}><Plus className="h-4 w-4" /> Add to queue</Button>
+                        <Button type="button" size="sm" disabled={disabled} onClick={() => store.addSpeakerToQueue(speaker.id, requestType, selectedDuration(speaker, store, customDurationSeconds))}><Plus className="h-4 w-4" /> Add to queue</Button>
                         <Button type="button" size="sm" variant="ghost" onClick={() => store.upsertSpeaker({ ...speaker, status: speaker.status === "unavailable" ? "available" : "unavailable" })}>{speaker.status === "unavailable" ? "Restore" : "Unavailable"}</Button>
                       </div>
                     </article>
@@ -247,9 +262,14 @@ export function OperatorApp() {
                         <div className="flex flex-wrap gap-2">
                           <Badge tone={entry.status === "hold" ? "amber" : entry.status === "unavailable" ? "red" : "blue"}>{entry.status}</Badge>
                           <Badge>{entry.requestType}</Badge>
+                          <Badge>{formatDuration(entry.allocatedSeconds)}</Badge>
                           <Badge>{speaker?.preferredLanguage}</Badge>
                         </div>
                       </div>
+                      <label className="grid gap-1 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                        Speaking time
+                        <DurationSelect value={entry.allocatedSeconds} onChange={(value) => store.patchEntry(entry.id, { allocatedSeconds: value })} />
+                      </label>
                       <textarea className={`${inputClass} min-h-16`} value={entry.note ?? ""} onChange={(event) => store.patchEntry(entry.id, { note: event.target.value })} placeholder="Operator note" />
                       <div className="flex flex-wrap gap-2">
                         <Button type="button" size="sm" variant="secondary" onClick={() => store.moveEntry(entry.id, "up")}><ArrowUp className="h-4 w-4" /> Up</Button>
@@ -278,9 +298,9 @@ export function OperatorApp() {
                     <div className="mt-3 flex flex-wrap gap-2"><Badge tone="blue">{store.currentEntry?.requestType}</Badge><Badge>{currentSpeaker.preferredLanguage}</Badge></div>
                     {store.currentEntry?.note && <p className="mt-3 rounded-md bg-white p-3 text-sm dark:bg-slate-900">{store.currentEntry.note}</p>}
                   </div>
-                  <SpeakerTimer durationSeconds={store.settings.defaultDurationSeconds} activeKey={store.currentEntry?.id} />
+                  <SpeakerTimer durationSeconds={store.currentEntry?.allocatedSeconds ?? store.settings.defaultDurationSeconds} activeKey={store.currentEntry?.id} />
                   <div className="grid gap-2">
-                    <Button type="button" onClick={() => store.endCurrent(currentElapsed(store.currentEntry?.requestedAt))}>End intervention</Button>
+                    <Button type="button" onClick={() => store.endCurrent(elapsedSince(store.currentEntry?.requestedAt))}>End intervention</Button>
                     <Button type="button" variant="secondary" onClick={store.returnCurrent}>Return to queue</Button>
                     <Button type="button" variant="danger" onClick={() => window.confirm("Skip current speaker?") && store.skipCurrent()}>Skip speaker</Button>
                   </div>
@@ -331,13 +351,28 @@ export function OperatorApp() {
   );
 }
 
-function currentElapsed(startedAt?: string) {
-  if (!startedAt) return 0;
-  return Math.max(0, Math.round((Date.now() - new Date(startedAt).getTime()) / 1000));
-}
-
 function Stat({ label, value }: { label: string; value: string }) {
   return <div className="rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950"><div className="text-xs font-bold uppercase text-slate-500">{label}</div><div className="text-xl font-bold">{value}</div></div>;
+}
+
+function DurationSelect({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+  return (
+    <select className={inputClass} value={value} onChange={(event) => onChange(Number(event.target.value))}>
+      <option value={60}>1 minute</option>
+      <option value={120}>2 minutes</option>
+      <option value={180}>3 minutes</option>
+      <option value={300}>5 minutes</option>
+      <option value={600}>10 minutes</option>
+    </select>
+  );
+}
+
+function selectedDuration(speaker: Speaker, store: ReturnType<typeof useQueueStore.getState>, customDurationSeconds: string) {
+  return customDurationSeconds === "auto" ? defaultDurationForSpeaker(store, speaker) : Number(customDurationSeconds);
+}
+
+function formatDuration(seconds: number) {
+  return `${Math.round(seconds / 60)} min`;
 }
 
 function Empty({ title, detail }: { title: string; detail: string }) {

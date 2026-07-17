@@ -21,7 +21,12 @@ export function setSpeakerStatus(speakers: Speaker[], speakerId: string, status:
   return speakers.map((speaker) => (speaker.id === speakerId ? { ...speaker, status } : speaker));
 }
 
-export function addToQueue(state: QueueState, speakerId: string, requestType: RequestType = "General intervention"): QueueState {
+export function defaultDurationForSpeaker(state: QueueState, speaker?: Speaker) {
+  if (!speaker) return state.settings.defaultDurationSeconds;
+  return speaker.category === "Member State" ? state.settings.memberStateDurationSeconds : state.settings.nonMemberStateDurationSeconds;
+}
+
+export function addToQueue(state: QueueState, speakerId: string, requestType: RequestType = "General intervention", allocatedSeconds?: number): QueueState {
   const speaker = speakerById(state, speakerId);
   const alreadyActive = state.queue.some((entry) => entry.speakerId === speakerId) || state.currentEntry?.speakerId === speakerId;
   if (!speaker || alreadyActive || speaker.status === "unavailable") return state;
@@ -31,6 +36,7 @@ export function addToQueue(state: QueueState, speakerId: string, requestType: Re
     speakerId,
     requestType,
     requestedAt: now(),
+    allocatedSeconds: allocatedSeconds ?? defaultDurationForSpeaker(state, speaker),
     status: "waiting"
   };
 
