@@ -64,7 +64,7 @@ export function OperatorApp() {
         event.preventDefault();
         searchRef.current?.focus();
       }
-      if (event.key.toLowerCase() === "n") store.startNext();
+      if (event.key.toLowerCase() === "n") store.goToNext(elapsedSince(store.currentEntry?.requestedAt));
       if (event.key.toLowerCase() === "e") store.endCurrent(elapsedSince(store.currentEntry?.requestedAt));
       if (event.key.toLowerCase() === "f") window.open("/display", "_blank");
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") store.undo();
@@ -252,6 +252,7 @@ export function OperatorApp() {
                   </div>
                   <SpeakerTimer durationSeconds={store.currentEntry?.allocatedSeconds ?? store.settings.defaultDurationSeconds} activeKey={store.currentEntry?.id} />
                   <div className="grid gap-2">
+                    <Button type="button" onClick={() => store.goToNext(elapsedSince(store.currentEntry?.requestedAt))} disabled={!nextEntry}>Go to next speaker</Button>
                     <Button type="button" onClick={() => store.endCurrent(elapsedSince(store.currentEntry?.requestedAt))}>End intervention</Button>
                     <Button type="button" variant="secondary" onClick={store.returnCurrent}>Return to queue</Button>
                     <Button type="button" variant="danger" onClick={() => window.confirm("Skip current speaker?") && store.skipCurrent()}>Skip speaker</Button>
@@ -260,7 +261,7 @@ export function OperatorApp() {
               ) : (
                 <div className="grid gap-3">
                   <Empty title="No active speaker" detail="Start the next waiting intervention when the Chair gives the floor." />
-                  <Button type="button" size="lg" onClick={store.startNext} disabled={!nextEntry}>Start next speaker</Button>
+                  <Button type="button" size="lg" onClick={() => store.goToNext()} disabled={!nextEntry}>Go to next speaker</Button>
                 </div>
               )}
               <div className="mt-4 grid gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">

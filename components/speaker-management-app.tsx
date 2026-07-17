@@ -107,7 +107,18 @@ export function SpeakerManagementApp() {
         <Card className="p-4">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-bold">Speaker list</h2>
-            <Badge>{speakers.length} listed</Badge>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge>{speakers.length} listed</Badge>
+              <Button
+                type="button"
+                size="sm"
+                variant="danger"
+                disabled={!store.speakers.length}
+                onClick={() => window.confirm("Are you sure you want to delete all saved speakers? This also clears the queue, current speaker, and completed history.") && store.clearSpeakers()}
+              >
+                <Trash2 className="h-4 w-4" /> Delete all
+              </Button>
+            </div>
           </div>
           <div className="relative mb-3">
             <Search className="absolute left-3 top-3 h-4 w-4 text-slate-500" />

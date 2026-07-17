@@ -27,6 +27,7 @@ type QueueStore = QueueState & {
   moveEntry: (entryId: string, direction: "up" | "down" | "top") => void;
   patchEntry: (entryId: string, patch: Partial<QueueEntry>) => void;
   startNext: () => void;
+  goToNext: (elapsedSeconds?: number) => void;
   endCurrent: (elapsedSeconds: number) => void;
   returnCurrent: () => void;
   skipCurrent: () => void;
@@ -34,6 +35,7 @@ type QueueStore = QueueState & {
   updateSettings: (settings: Partial<MeetingSettings>) => void;
   upsertSpeaker: (speaker: Speaker) => void;
   deleteSpeaker: (speakerId: string) => void;
+  clearSpeakers: () => void;
   importSpeakers: (speakers: Speaker[]) => void;
   clearQueue: () => void;
   clearHistory: () => void;
@@ -62,6 +64,10 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
   moveEntry: (entryId, direction) => set((current) => push(current, reorderQueue(current, entryId, direction))),
   patchEntry: (entryId, patch) => set((current) => push(current, updateEntry(current, entryId, patch))),
   startNext: () => set((current) => push(current, startNextSpeaker(current))),
+  goToNext: (elapsedSeconds = 0) => set((current) => {
+    const ended = current.currentEntry ? endCurrentSpeaker(current, elapsedSeconds) : current;
+    return push(current, startNextSpeaker(ended));
+  }),
   endCurrent: (elapsedSeconds) => set((current) => push(current, endCurrentSpeaker(current, elapsedSeconds))),
   returnCurrent: () => set((current) => push(current, returnCurrentToQueue(current))),
   skipCurrent: () => set((current) => (current.currentEntry ? push(current, { ...current, currentEntry: undefined, activity: [{ id: `activity-${Date.now()}`, message: "Current speaker skipped", createdAt: new Date().toISOString() }, ...current.activity].slice(0, 12) }) : current)),
@@ -74,6 +80,14 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     queue: current.queue.filter((entry) => entry.speakerId !== speakerId),
     currentEntry: current.currentEntry?.speakerId === speakerId ? undefined : current.currentEntry,
     completed: current.completed.filter((entry) => entry.speakerId !== speakerId)
+  })),
+  clearSpeakers: () => set((current) => push(current, {
+    ...current,
+    speakers: [],
+    queue: [],
+    currentEntry: undefined,
+    completed: [],
+    activity: [{ id: `activity-${Date.now()}`, message: "All speakers deleted", createdAt: new Date().toISOString() }, ...current.activity].slice(0, 12)
   })),
   importSpeakers: (speakers) => set((current) => push(current, { ...current, speakers })),
   clearQueue: () => set((current) => push(current, { ...current, queue: [], currentEntry: undefined, speakers: current.speakers.map((speaker) => (speaker.status === "queued" || speaker.status === "speaking" ? { ...speaker, status: "available" } : speaker)) })),
