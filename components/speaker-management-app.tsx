@@ -33,15 +33,14 @@ export function SpeakerManagementApp() {
 
   const addSpeaker = (formData: FormData) => {
     const fullName = String(formData.get("fullName") ?? "").trim();
-    const delegation = String(formData.get("delegation") ?? "").trim();
-    if (!fullName || !delegation) return;
+    if (!fullName) return;
     const speaker: Speaker = {
       id: `manual-${Date.now()}`,
       fullName,
-      delegation,
-      title: String(formData.get("title") ?? ""),
+      delegation: fullName,
+      title: "",
       category: String(formData.get("category")) as SpeakerCategory,
-      preferredLanguage: String(formData.get("preferredLanguage") ?? "English"),
+      preferredLanguage: "",
       status: "available"
     };
     store.upsertSpeaker(speaker);
@@ -112,11 +111,8 @@ export function SpeakerManagementApp() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-lg font-bold"><Plus className="h-5 w-5 text-unblue" /> Add speaker</div>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Full name"><input id="new-speaker-name" name="fullName" className={inputClass} required /></Field>
-                <Field label="Delegation / entity"><input name="delegation" className={inputClass} required /></Field>
-                <Field label="Title"><input name="title" className={inputClass} /></Field>
-                <Field label="Language"><input name="preferredLanguage" className={inputClass} defaultValue="English" /></Field>
+              <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+                <Field label="Name"><input id="new-speaker-name" name="fullName" className={inputClass} required /></Field>
                 <Field label="Category"><select name="category" className={inputClass} defaultValue="Member State">{categories.map((item) => <option key={item}>{item}</option>)}</select></Field>
                 <div className="flex items-end">
                   <Button className="w-full" type="submit"><Plus className="h-4 w-4" /> Add speaker</Button>
