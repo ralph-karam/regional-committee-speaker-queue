@@ -171,11 +171,11 @@ export function SpeakerManagementApp() {
                       ) : (
                         <>
                           <h3 className="break-words text-lg font-bold leading-tight [overflow-wrap:anywhere]">{speaker.fullName}</h3>
+                          <p className="mt-1 text-sm font-semibold text-unblue">{speaker.category}</p>
                           {subtitle && <p className="mt-1 break-words text-sm text-slate-600 [overflow-wrap:anywhere] dark:text-slate-300">{subtitle}</p>}
                         </>
                       )}
                     </div>
-                    {!editing && <Badge className="shrink-0" tone={speaker.category === "Member State" ? "blue" : "slate"}>{speaker.category}</Badge>}
                   </div>
                   <div className="flex flex-wrap justify-end gap-2">
                     {editing ? (
@@ -209,7 +209,7 @@ export function SpeakerManagementApp() {
 
 function speakerSubtitle(speaker: Speaker) {
   const details = [];
-  if (speaker.delegation) details.push(`Entity: ${speaker.delegation}`);
+  if (speaker.delegation && speaker.delegation !== speaker.fullName) details.push(`Entity: ${speaker.delegation}`);
   if (speaker.title && !isFillerTitle(speaker.title, speaker.category)) details.push(speaker.title);
   return details.join(" · ");
 }
