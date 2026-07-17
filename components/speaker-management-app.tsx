@@ -3,7 +3,7 @@
 import { Check, Download, FileUp, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { BrandLogo } from "@/components/brand-logo";
+import { BrandLogo, WhoLogo } from "@/components/brand-logo";
 import { Badge, Button, Card, Field, inputClass } from "@/components/ui";
 import { defaultSpeakerCategories, mergeCategories } from "@/lib/categories";
 import { parseSpeakerCsv } from "@/lib/csv";
@@ -100,9 +100,12 @@ export function SpeakerManagementApp() {
               <p className="text-sm text-slate-600 dark:text-slate-300">Add, import, export, and delete the speaker directory</p>
             </div>
           </div>
-          <Link href="/" className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 font-semibold hover:bg-mist dark:border-slate-700 dark:bg-slate-900">
-            Back to queue
-          </Link>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <WhoLogo compact className="hidden sm:flex" />
+            <Link href="/" className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 font-semibold hover:bg-mist dark:border-slate-700 dark:bg-slate-900">
+              Back to queue
+            </Link>
+          </div>
         </div>
       </header>
 

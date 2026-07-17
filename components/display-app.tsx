@@ -2,7 +2,7 @@
 
 import { Maximize2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { BrandLogo } from "@/components/brand-logo";
+import { BrandLogo, WhoLogo } from "@/components/brand-logo";
 import { Clock } from "@/components/clock";
 import { Button, cn } from "@/components/ui";
 import { speakerById } from "@/lib/queue-logic";
@@ -27,6 +27,7 @@ export function DisplayApp() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <WhoLogo className="hidden border-white/20 lg:flex" />
             <Clock large />
             <Button type="button" variant="secondary" onClick={() => document.documentElement.requestFullscreen?.()}><Maximize2 className="h-4 w-4" /> Full screen</Button>
           </div>
