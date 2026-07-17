@@ -11,7 +11,7 @@
 }
 
 body {
-  @apply bg-slate-50 text-ink antialiased dark:bg-slate-950 dark:text-slate-100;
+  @apply bg-[#f6f8f5] text-ink antialiased dark:bg-slate-950 dark:text-slate-100;
 }
 
 button,

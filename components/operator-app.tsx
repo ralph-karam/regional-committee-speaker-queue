@@ -7,7 +7,6 @@ import {
   Download,
   ExternalLink,
   History,
-  Mic2,
   Moon,
   Plus,
   RotateCcw,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Clock } from "@/components/clock";
 import { SpeakerTimer } from "@/components/timer";
 import { Badge, Button, Card, Field, inputClass } from "@/components/ui";
@@ -90,11 +90,12 @@ export function OperatorApp() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
+    <main className="min-h-screen bg-[#f6f8f5] dark:bg-slate-950">
+      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
+        <div className="h-1 bg-[linear-gradient(90deg,#5a9f3f,#f47b20,#08779a)]" />
         <div className="mx-auto flex max-w-[1800px] flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-md bg-unblue text-white"><Mic2 aria-hidden /></div>
+          <div className="flex items-center gap-4">
+            <BrandLogo compact />
             <div>
               <h1 className="text-xl font-bold">{store.settings.meetingTitle}</h1>
               <p className="text-sm text-slate-600 dark:text-slate-300">{store.settings.sessionTitle} · {store.settings.room}</p>
@@ -115,7 +116,7 @@ export function OperatorApp() {
       </header>
 
       <section className="mx-auto grid max-w-[1800px] gap-4 px-4 py-4">
-        <Card className="p-4">
+        <Card className="border-t-4 border-t-rcgreen p-4">
           <div className="grid gap-4">
             <div>
               <div className="mb-3 flex items-center gap-2 text-lg font-bold"><Settings className="h-5 w-5 text-unblue" /> Meeting setup</div>
@@ -145,7 +146,7 @@ export function OperatorApp() {
           <section className={mobileTab !== "speakers" ? "hidden md:block" : ""}>
             <Card className="p-4">
               <div className="mb-3 flex items-center justify-between gap-2">
-                <h2 className="flex items-center gap-2 text-lg font-bold"><Users className="h-5 w-5 text-unblue" /> Speaker directory</h2>
+                <h2 className="flex items-center gap-2 text-lg font-bold"><Users className="h-5 w-5 text-rcgreen" /> Speaker directory</h2>
                 <Badge>{filteredSpeakers.length} listed</Badge>
               </div>
               <div className="grid gap-3">
@@ -155,13 +156,11 @@ export function OperatorApp() {
               <div className="mt-4 grid max-h-[760px] gap-2 overflow-auto pr-1">
                 {filteredSpeakers.map((speaker) => {
                   const disabled = speaker.status === "queued" || speaker.status === "speaking" || speaker.status === "unavailable";
-                  const subtitle = speakerSubtitle(speaker);
                   return (
                     <article key={speaker.id} onDoubleClick={() => store.addSpeakerToQueue(speaker.id, defaultRequestType, defaultDurationForSpeaker(store, speaker))} className="grid gap-3 rounded-md border border-slate-200 p-3 dark:border-slate-800">
                       <div className="min-w-0">
                         <h3 className="break-words font-bold leading-tight [overflow-wrap:anywhere]">{speaker.fullName}</h3>
                         <p className="mt-1 text-sm font-semibold text-unblue">{speaker.category}</p>
-                        {subtitle && <p className="mt-1 break-words text-sm text-slate-600 [overflow-wrap:anywhere] dark:text-slate-300">{subtitle}</p>}
                       </div>
                       <div className="grid gap-2">
                         <Button type="button" size="sm" disabled={disabled} onClick={() => store.addSpeakerToQueue(speaker.id, defaultRequestType, defaultDurationForSpeaker(store, speaker))}><Plus className="h-4 w-4" /> Add to queue</Button>
@@ -182,7 +181,7 @@ export function OperatorApp() {
                 <Stat label="Completed" value={String(store.completed.length)} />
               </div>
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 className="flex items-center gap-2 text-lg font-bold"><ClipboardList className="h-5 w-5 text-unblue" /> Active speaker queue</h2>
+                <h2 className="flex items-center gap-2 text-lg font-bold"><ClipboardList className="h-5 w-5 text-rcteal" /> Active speaker queue</h2>
                 <div className="flex flex-wrap gap-2">
                   <Button type="button" variant="secondary" onClick={store.undo} disabled={!store.undoStack.length}><Undo2 className="h-4 w-4" /> Undo</Button>
                   <Button type="button" variant="danger" onClick={() => window.confirm("Clear the full queue?") && store.clearQueue()} disabled={!store.queue.length}><Trash2 className="h-4 w-4" /> Clear queue</Button>
@@ -237,10 +236,10 @@ export function OperatorApp() {
 
           <section className={mobileTab !== "current" ? "hidden md:block" : ""}>
             <Card className="sticky top-24 p-4">
-              <h2 className="mb-3 flex items-center gap-2 text-lg font-bold"><Mic2 className="h-5 w-5 text-unblue" /> Now speaking</h2>
+              <h2 className="mb-3 text-lg font-bold">Now speaking</h2>
               {currentSpeaker ? (
                 <div className="grid gap-4">
-                  <div className="rounded-lg border border-blue-100 bg-blue-50 p-5 dark:border-blue-900 dark:bg-blue-950">
+                  <div className="rounded-lg border border-rcteal/25 bg-[#eef8f8] p-5 dark:border-blue-900 dark:bg-blue-950">
                     <p className="text-sm font-bold uppercase text-unblue">On the floor</p>
                     <h3 className="mt-1 break-words text-2xl font-bold leading-tight [overflow-wrap:anywhere] xl:text-3xl">{currentSpeaker.fullName}</h3>
                     <p className="mt-2 break-words text-lg font-semibold text-unblue [overflow-wrap:anywhere]">{currentSpeaker.category}</p>
@@ -328,18 +327,6 @@ function DurationSelect({ value, onChange }: { value: number; onChange: (value: 
 
 function formatDuration(seconds: number) {
   return `${Math.round(seconds / 60)} min`;
-}
-
-function speakerSubtitle(speaker: { fullName: string; delegation: string; title?: string; category: SpeakerCategory }) {
-  const details = [];
-  if (speaker.delegation && speaker.delegation !== speaker.fullName) details.push(`Entity: ${speaker.delegation}`);
-  if (speaker.title && !isFillerTitle(speaker.title, speaker.category)) details.push(speaker.title);
-  return details.join(" · ");
-}
-
-function isFillerTitle(title: string, category: SpeakerCategory) {
-  const normalized = title.trim().toLowerCase();
-  return normalized === category.toLowerCase() || normalized === `${category.toLowerCase()} delegation`;
 }
 
 function Empty({ title, detail }: { title: string; detail: string }) {

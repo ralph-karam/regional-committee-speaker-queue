@@ -14,9 +14,9 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex min-h-10 items-center justify-center gap-2 rounded-md border px-4 font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
-        variant === "primary" && "border-unblue bg-unblue text-white hover:bg-blue-700",
-        variant === "secondary" && "border-slate-200 bg-white text-ink hover:bg-mist dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100",
+        "inline-flex min-h-10 items-center justify-center gap-2 rounded-md border px-4 font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50",
+        variant === "primary" && "border-rcblue bg-rcblue text-white hover:bg-[#06627f]",
+        variant === "secondary" && "border-slate-200 bg-white text-ink hover:border-rcteal/40 hover:bg-mist dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100",
         variant === "danger" && "border-red-600 bg-red-600 text-white hover:bg-red-700",
         variant === "ghost" && "border-transparent bg-transparent text-ink hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800",
         size === "sm" && "min-h-9 px-3 text-sm",
@@ -29,7 +29,7 @@ export function Button({
 }
 
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <section className={cn("rounded-lg border border-slate-200 bg-white shadow-soft dark:border-slate-800 dark:bg-slate-900", className)} {...props} />;
+  return <section className={cn("rounded-lg border border-slate-200/80 bg-white shadow-soft dark:border-slate-800 dark:bg-slate-900", className)} {...props} />;
 }
 
 export function Badge({ className, tone = "slate", ...props }: React.HTMLAttributes<HTMLSpanElement> & { tone?: "blue" | "green" | "amber" | "red" | "slate" }) {
@@ -59,4 +59,4 @@ export function Field({ label, children }: { label: string; children: React.Reac
 }
 
 export const inputClass =
-  "min-h-11 rounded-md border border-slate-200 bg-white px-3 text-sm text-ink shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100";
+  "min-h-11 rounded-md border border-slate-200 bg-white px-3 text-sm text-ink shadow-sm transition focus:border-rcteal dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100";

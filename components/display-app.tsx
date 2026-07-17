@@ -1,7 +1,8 @@
 "use client";
 
-import { Maximize2, Mic2 } from "lucide-react";
+import { Maximize2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Clock } from "@/components/clock";
 import { Button, cn } from "@/components/ui";
 import { speakerById } from "@/lib/queue-logic";
@@ -15,11 +16,11 @@ export function DisplayApp() {
   const upcoming = store.queue.filter((entry) => entry.status === "waiting").slice(0, 5);
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
+    <main className="min-h-screen bg-[#071625] text-white">
       <div className="mx-auto grid min-h-screen max-w-7xl grid-rows-[auto_1fr_auto] gap-8 px-8 py-6">
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/15 pb-5">
           <div className="flex items-center gap-4">
-            <div className="grid h-14 w-14 place-items-center rounded-md bg-unblue"><Mic2 className="h-8 w-8" /></div>
+            <BrandLogo className="border-white/20" />
             <div>
               <h1 className="text-3xl font-bold">{store.settings.meetingTitle}</h1>
               <p className="mt-1 text-xl text-slate-300">{store.settings.sessionTitle} · {store.settings.room}</p>
@@ -32,7 +33,7 @@ export function DisplayApp() {
         </header>
 
         <section className="grid items-center gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-lg border border-blue-400/40 bg-blue-500/15 p-8">
+          <div className="rounded-lg border border-rcteal/50 bg-[#0b2438] p-8 shadow-lift">
             <p className="text-xl font-bold uppercase text-blue-200">Now speaking</p>
             {current ? (
               <>
@@ -48,7 +49,7 @@ export function DisplayApp() {
           </div>
 
           <div className="grid gap-5">
-            <div className="rounded-lg border border-white/15 bg-white/10 p-6">
+            <div className="rounded-lg border border-white/15 bg-white/10 p-6 shadow-soft">
               <p className="text-lg font-bold uppercase text-slate-300">Next speaker</p>
               {upcoming[0] ? (
                 <>
@@ -57,7 +58,7 @@ export function DisplayApp() {
                 </>
               ) : <p className="mt-6 text-3xl text-slate-400">No speaker waiting</p>}
             </div>
-            <div className="rounded-lg border border-white/15 bg-white/10 p-6">
+            <div className="rounded-lg border border-white/15 bg-white/10 p-6 shadow-soft">
               <p className="mb-4 text-lg font-bold uppercase text-slate-300">Upcoming queue</p>
               <div className="grid gap-3">
                 {upcoming.slice(1).map((entry, index) => {

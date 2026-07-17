@@ -1,8 +1,9 @@
 "use client";
 
-import { Check, Download, FileUp, Mic2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { Check, Download, FileUp, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Badge, Button, Card, Field, inputClass } from "@/components/ui";
 import { defaultSpeakerCategories, mergeCategories } from "@/lib/categories";
 import { parseSpeakerCsv } from "@/lib/csv";
@@ -88,11 +89,12 @@ export function SpeakerManagementApp() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
+    <main className="min-h-screen bg-[#f6f8f5] dark:bg-slate-950">
+      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
+        <div className="h-1 bg-[linear-gradient(90deg,#5a9f3f,#f47b20,#08779a)]" />
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-md bg-unblue text-white"><Mic2 aria-hidden /></div>
+          <div className="flex items-center gap-4">
+            <BrandLogo compact />
             <div>
               <h1 className="text-xl font-bold">Manage Speakers</h1>
               <p className="text-sm text-slate-600 dark:text-slate-300">Add, import, export, and delete the speaker directory</p>
@@ -165,7 +167,6 @@ export function SpeakerManagementApp() {
           </div>
           <div className="grid max-h-[760px] gap-2 overflow-auto pr-1">
             {speakers.map((speaker) => {
-              const subtitle = speakerSubtitle(speaker);
               const editing = editingId === speaker.id;
               return (
                 <article key={speaker.id} className="grid gap-3 rounded-md border border-slate-200 bg-slate-50/60 p-4 transition hover:border-blue-200 hover:bg-blue-50/40 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-blue-900 dark:hover:bg-blue-950/30">
@@ -182,7 +183,6 @@ export function SpeakerManagementApp() {
                         <>
                           <h3 className="break-words text-lg font-bold leading-tight [overflow-wrap:anywhere]">{speaker.fullName}</h3>
                           <p className="mt-1 text-sm font-semibold text-unblue">{speaker.category}</p>
-                          {subtitle && <p className="mt-1 break-words text-sm text-slate-600 [overflow-wrap:anywhere] dark:text-slate-300">{subtitle}</p>}
                         </>
                       )}
                     </div>
@@ -215,16 +215,4 @@ export function SpeakerManagementApp() {
       </section>
     </main>
   );
-}
-
-function speakerSubtitle(speaker: Speaker) {
-  const details = [];
-  if (speaker.delegation && speaker.delegation !== speaker.fullName) details.push(`Entity: ${speaker.delegation}`);
-  if (speaker.title && !isFillerTitle(speaker.title, speaker.category)) details.push(speaker.title);
-  return details.join(" · ");
-}
-
-function isFillerTitle(title: string, category: SpeakerCategory) {
-  const normalized = title.trim().toLowerCase();
-  return normalized === category.toLowerCase() || normalized === `${category.toLowerCase()} delegation`;
 }
