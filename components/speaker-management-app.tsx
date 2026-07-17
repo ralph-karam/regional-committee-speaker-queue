@@ -94,14 +94,14 @@ export function SpeakerManagementApp() {
         <div className="h-1 bg-[linear-gradient(90deg,#5a9f3f,#f47b20,#08779a)]" />
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-4">
-            <BrandLogo compact />
+            <WhoLogo compact />
             <div>
               <h1 className="text-xl font-bold">Manage Speakers</h1>
               <p className="text-sm text-slate-600 dark:text-slate-300">Add, import, export, and delete the speaker directory</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <WhoLogo compact className="hidden sm:flex" />
+            <BrandLogo compact className="hidden sm:flex" />
             <Link href="/" className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 font-semibold hover:bg-mist dark:border-slate-700 dark:bg-slate-900">
               Back to queue
             </Link>

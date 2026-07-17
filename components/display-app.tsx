@@ -21,14 +21,14 @@ export function DisplayApp() {
       <div className="mx-auto grid min-h-screen max-w-7xl grid-rows-[auto_1fr_auto] gap-8 px-8 py-6">
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/15 pb-5">
           <div className="flex items-center gap-4">
-            <BrandLogo className="border-white/20" />
+            <WhoLogo className="border-white/20" />
             <div>
               <h1 className="text-3xl font-bold">{store.settings.meetingTitle}</h1>
               <p className="mt-1 text-xl text-slate-300">{store.settings.sessionTitle} · {store.settings.room}</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <WhoLogo className="hidden border-white/20 lg:flex" />
+            <BrandLogo className="hidden border-white/20 lg:flex" />
             <Clock large />
             <Button type="button" variant="secondary" onClick={() => document.documentElement.requestFullscreen?.()}><Maximize2 className="h-4 w-4" /> Full screen</Button>
           </div>

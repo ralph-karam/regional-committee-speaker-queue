@@ -120,13 +120,13 @@ export function OperatorApp() {
         <div className="h-1 bg-[linear-gradient(90deg,#5a9f3f,#f47b20,#08779a)]" />
         <div className="mx-auto grid max-w-[1800px] gap-3 px-4 py-3 lg:grid-cols-[minmax(0,1fr)_auto]">
           <div className="flex items-center gap-4">
-            <BrandLogo compact />
+            <WhoLogo compact />
             <div>
               <h1 className="text-xl font-bold">{store.settings.meetingTitle}</h1>
               <p className="text-sm text-slate-600 dark:text-slate-300">{store.settings.sessionTitle} · {store.settings.room}</p>
             </div>
           </div>
-          <WhoLogo compact className="hidden justify-self-end sm:flex" />
+          <BrandLogo compact className="hidden justify-self-end sm:flex" />
           <div className="flex flex-wrap items-center justify-end gap-2 lg:col-span-2">
             <span className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">Saved {store.lastSavedAt ? new Date(store.lastSavedAt).toLocaleTimeString() : "locally"}</span>
             <Clock />
