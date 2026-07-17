@@ -14,6 +14,7 @@ export function DisplayApp() {
   const store = useQueueStore();
   const current = speakerById(store, store.currentEntry?.speakerId);
   const upcoming = store.queue.filter((entry) => entry.status === "waiting").slice(0, 5);
+  const meetingEnded = store.meetingEnded;
 
   return (
     <main className="min-h-screen bg-[#071625] text-white">
@@ -35,8 +36,13 @@ export function DisplayApp() {
 
         <section className="grid items-center gap-8 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="rounded-lg border border-rcteal/50 bg-[#0b2438] p-8 shadow-lift">
-            <p className="text-xl font-bold uppercase text-blue-200">Now speaking</p>
-            {current ? (
+            <p className="text-xl font-bold uppercase text-blue-200">{meetingEnded ? "Meeting status" : "Now speaking"}</p>
+            {meetingEnded ? (
+              <div className="py-20">
+                <h2 className="text-7xl font-bold leading-tight">Meeting ended</h2>
+                <p className="mt-5 text-3xl text-slate-300">{store.settings.sessionTitle}</p>
+              </div>
+            ) : current ? (
               <>
                 <h2 className="mt-4 text-7xl font-bold leading-tight">{current.fullName}</h2>
                 <p className="mt-4 text-4xl text-slate-100">{current.category}</p>
@@ -51,8 +57,13 @@ export function DisplayApp() {
 
           <div className="grid gap-5">
             <div className="rounded-lg border border-white/15 bg-white/10 p-6 shadow-soft">
-              <p className="text-lg font-bold uppercase text-slate-300">Next speaker</p>
-              {upcoming[0] ? (
+              <p className="text-lg font-bold uppercase text-slate-300">{meetingEnded ? "Status" : "Next speaker"}</p>
+              {meetingEnded ? (
+                <>
+                  <h3 className="mt-3 text-4xl font-bold">Closed</h3>
+                  <p className="mt-2 text-2xl text-slate-300">No active queue</p>
+                </>
+              ) : upcoming[0] ? (
                 <>
                   <h3 className="mt-3 text-4xl font-bold">{speakerById(store, upcoming[0].speakerId)?.fullName}</h3>
                   <p className="mt-2 text-2xl text-slate-300">{speakerById(store, upcoming[0].speakerId)?.category}</p>
@@ -62,7 +73,7 @@ export function DisplayApp() {
             <div className="rounded-lg border border-white/15 bg-white/10 p-6 shadow-soft">
               <p className="mb-4 text-lg font-bold uppercase text-slate-300">Upcoming queue</p>
               <div className="grid gap-3">
-                {upcoming.slice(1).map((entry, index) => {
+                {!meetingEnded && upcoming.slice(1).map((entry, index) => {
                   const speaker = speakerById(store, entry.speakerId);
                   return (
                     <div key={entry.id} className="grid grid-cols-[3rem_1fr] items-center rounded-md bg-white/10 p-4">
@@ -74,7 +85,9 @@ export function DisplayApp() {
                     </div>
                   );
                 })}
-                {upcoming.length <= 1 && <p className="rounded-md border border-dashed border-white/20 p-6 text-2xl text-slate-400">Additional speakers will appear here.</p>}
+                {meetingEnded ? (
+                  <p className="rounded-md border border-dashed border-white/20 p-6 text-2xl text-slate-400">The meeting has ended.</p>
+                ) : upcoming.length <= 1 && <p className="rounded-md border border-dashed border-white/20 p-6 text-2xl text-slate-400">Additional speakers will appear here.</p>}
               </div>
             </div>
           </div>

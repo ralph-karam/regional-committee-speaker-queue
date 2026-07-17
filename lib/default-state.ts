@@ -24,6 +24,7 @@ export const createInitialState = (): QueueState => ({
   customCategories: [],
   queue: [],
   completed: [],
+  meetingEnded: false,
   settings: defaultSettings,
   activity: [{ id: "activity-initial", message: "Meeting workspace ready", createdAt: new Date().toISOString() }]
 });

@@ -78,6 +78,7 @@ export interface QueueState {
   queue: QueueEntry[];
   currentEntry?: QueueEntry;
   completed: CompletedIntervention[];
+  meetingEnded: boolean;
   settings: MeetingSettings;
   activity: ActivityEvent[];
 }

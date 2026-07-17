@@ -6,9 +6,11 @@ import {
   ClipboardList,
   Download,
   ExternalLink,
+  Flag,
   History,
   Moon,
   Plus,
+  Power,
   RotateCcw,
   Search,
   Settings,
@@ -42,6 +44,7 @@ export function OperatorApp() {
   const currentSpeaker = speakerById(store, store.currentEntry?.speakerId);
   const nextEntry = store.queue.find((entry) => entry.status === "waiting");
   const nextSpeaker = speakerById(store, nextEntry?.speakerId);
+  const hasLiveSession = Boolean(store.currentEntry || store.queue.length || store.completed.length);
   const categories = useMemo(
     () => ["All", ...mergeCategories(defaultSpeakerCategories, store.customCategories, store.speakers.map((speaker) => speaker.category))],
     [store.customCategories, store.speakers]
@@ -58,6 +61,30 @@ export function OperatorApp() {
     const speaker = speakerById(store, entry.speakerId);
     return [speaker?.fullName, speaker?.delegation, entry.requestType].join(" ").toLowerCase().includes(historyQuery.toLowerCase());
   });
+
+  const changeSessionTitle = (sessionTitle: string) => {
+    if (sessionTitle === store.settings.sessionTitle) return;
+    if (hasLiveSession) {
+      const ok = window.confirm("End the current session and clear the queue, current speaker, and completed history before switching sessions?");
+      if (!ok) return;
+      store.endSession();
+    } else if (store.meetingEnded) {
+      store.endSession();
+    }
+    store.updateSettings({ sessionTitle });
+  };
+
+  const endSession = () => {
+    if (!hasLiveSession) return;
+    const ok = window.confirm("End this session? This clears the queue, current speaker, and completed history, but keeps saved speakers and meeting setup.");
+    if (ok) store.endSession();
+  };
+
+  const endMeeting = () => {
+    if (store.meetingEnded) return;
+    const ok = window.confirm("End the meeting? This clears the queue, current speaker, and completed history, keeps saved speakers, and marks the display as meeting ended.");
+    if (ok) store.endMeeting();
+  };
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -123,7 +150,7 @@ export function OperatorApp() {
               <div className="mb-3 flex items-center gap-2 text-lg font-bold"><Settings className="h-5 w-5 text-unblue" /> Meeting setup</div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <Field label="Meeting title"><input className={inputClass} value={store.settings.meetingTitle} onChange={(event) => store.updateSettings({ meetingTitle: event.target.value })} /></Field>
-                <Field label="Session title"><select className={inputClass} value={store.settings.sessionTitle} onChange={(event) => store.updateSettings({ sessionTitle: event.target.value })}>{sessionTitles.map((title) => <option key={title}>{title}</option>)}</select></Field>
+                <Field label="Session title"><select className={inputClass} value={store.settings.sessionTitle} onChange={(event) => changeSessionTitle(event.target.value)}>{sessionTitles.map((title) => <option key={title}>{title}</option>)}</select></Field>
                 <Field label="Date"><input className={inputClass} type="date" value={store.settings.meetingDate} onChange={(event) => store.updateSettings({ meetingDate: event.target.value })} /></Field>
                 <Field label="Room"><input className={inputClass} value={store.settings.room} onChange={(event) => store.updateSettings({ room: event.target.value })} /></Field>
                 <Field label="Member State duration"><DurationSelect value={store.settings.memberStateDurationSeconds} onChange={(value) => store.updateSettings({ memberStateDurationSeconds: value, defaultDurationSeconds: value })} /></Field>
@@ -132,7 +159,12 @@ export function OperatorApp() {
                   <input type="checkbox" checked={store.settings.showTimerOnDisplay} onChange={(event) => store.updateSettings({ showTimerOnDisplay: event.target.checked })} />
                   Show timer on display screen
                 </label>
+                <div className="grid gap-2 sm:grid-cols-2 xl:col-span-2">
+                  <Button type="button" variant="secondary" onClick={endSession} disabled={!hasLiveSession}><Flag className="h-4 w-4" /> End session</Button>
+                  <Button type="button" variant="danger" onClick={endMeeting} disabled={store.meetingEnded}><Power className="h-4 w-4" /> End meeting</Button>
+                </div>
               </div>
+              {store.meetingEnded && <div className="mt-3"><Badge tone="amber">Meeting ended</Badge></div>}
             </div>
           </div>
         </Card>
@@ -258,7 +290,13 @@ export function OperatorApp() {
                 </div>
               ) : (
                 <div className="grid gap-3">
-                  {nextSpeaker ? (
+                  {store.meetingEnded ? (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 dark:border-amber-900 dark:bg-amber-950">
+                      <p className="text-sm font-bold uppercase text-amber-800 dark:text-amber-200">Meeting status</p>
+                      <h3 className="mt-1 text-2xl font-bold leading-tight xl:text-3xl">Meeting ended</h3>
+                      <p className="mt-2 text-sm text-amber-900 dark:text-amber-100">Start a new session by changing the session title or adding speakers to the queue.</p>
+                    </div>
+                  ) : nextSpeaker ? (
                     <div className="rounded-lg border border-blue-100 bg-blue-50 p-5 dark:border-blue-900 dark:bg-blue-950">
                       <p className="text-sm font-bold uppercase text-unblue">Ready next speaker</p>
                       <h3 className="mt-1 break-words text-2xl font-bold leading-tight [overflow-wrap:anywhere] xl:text-3xl">{nextSpeaker.fullName}</h3>

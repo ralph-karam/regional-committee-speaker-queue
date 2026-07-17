@@ -19,6 +19,7 @@ export function normalizeQueueState(saved?: Partial<QueueState> | null): QueueSt
     speakers: saved.speakers ?? initial.speakers,
     customCategories: saved.customCategories ?? initial.customCategories,
     completed: saved.completed ?? initial.completed,
+    meetingEnded: saved.meetingEnded ?? initial.meetingEnded,
     activity: saved.activity ?? initial.activity
   };
 }

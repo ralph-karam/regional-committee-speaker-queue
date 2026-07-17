@@ -34,6 +34,8 @@ type QueueStore = QueueState & {
   endCurrent: (elapsedSeconds: number) => void;
   toggleCurrentTimer: () => void;
   resetCurrentTimer: () => void;
+  endSession: () => void;
+  endMeeting: () => void;
   returnCurrent: () => void;
   skipCurrent: () => void;
   restoreCompletedEntry: (completedId: string) => void;
@@ -52,7 +54,7 @@ type QueueStore = QueueState & {
 const push = (current: QueueStore, next: QueueState, undo = true) => ({
   ...next,
   hydrated: current.hydrated,
-  undoStack: undo ? [{ speakers: current.speakers, customCategories: current.customCategories, queue: current.queue, currentEntry: current.currentEntry, completed: current.completed, settings: current.settings, activity: current.activity }, ...current.undoStack].slice(0, 10) : current.undoStack,
+  undoStack: undo ? [{ speakers: current.speakers, customCategories: current.customCategories, queue: current.queue, currentEntry: current.currentEntry, completed: current.completed, meetingEnded: current.meetingEnded, settings: current.settings, activity: current.activity }, ...current.undoStack].slice(0, 10) : current.undoStack,
   lastSavedAt: new Date().toISOString()
 });
 
@@ -67,14 +69,21 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
   },
   persist: (state) => activeQueueService.save(state),
   applyRemoteState: (state) => set((current) => ({ ...state, hydrated: true, undoStack: current.undoStack, lastSavedAt: new Date().toISOString() })),
-  addSpeakerToQueue: (speakerId, requestType, allocatedSeconds) => set((current) => push(current, addToQueue(current, speakerId, requestType, allocatedSeconds))),
+  addSpeakerToQueue: (speakerId, requestType, allocatedSeconds) => set((current) => {
+    const next = addToQueue(current, speakerId, requestType, allocatedSeconds);
+    return push(current, next === current ? next : { ...next, meetingEnded: false });
+  }),
   removeEntry: (entryId) => set((current) => push(current, removeFromQueue(current, entryId))),
   moveEntry: (entryId, direction) => set((current) => push(current, reorderQueue(current, entryId, direction))),
   patchEntry: (entryId, patch) => set((current) => push(current, updateEntry(current, entryId, patch))),
-  startNext: () => set((current) => push(current, startNextSpeaker(current))),
+  startNext: () => set((current) => {
+    const next = startNextSpeaker(current);
+    return push(current, next === current ? next : { ...next, meetingEnded: false });
+  }),
   goToNext: (elapsedSeconds = 0) => set((current) => {
     const ended = current.currentEntry ? endCurrentSpeaker(current, elapsedSeconds) : current;
-    return push(current, startNextSpeaker(ended));
+    const next = startNextSpeaker(ended);
+    return push(current, next === ended ? next : { ...next, meetingEnded: false });
   }),
   endCurrent: (elapsedSeconds) => set((current) => push(current, endCurrentSpeaker(current, elapsedSeconds))),
   toggleCurrentTimer: () => set((current) => {
@@ -94,9 +103,30 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       currentEntry: { ...current.currentEntry, requestedAt: new Date().toISOString(), elapsedSeconds: 0, timerRunning: true }
     }, false);
   }),
+  endSession: () => set((current) => push(current, {
+    ...current,
+    queue: [],
+    currentEntry: undefined,
+    completed: [],
+    meetingEnded: false,
+    speakers: current.speakers.map((speaker) => ({ ...speaker, status: "available" })),
+    activity: [{ id: `activity-${Date.now()}`, message: "Session ended", createdAt: new Date().toISOString() }, ...current.activity].slice(0, 12)
+  })),
+  endMeeting: () => set((current) => push(current, {
+    ...current,
+    queue: [],
+    currentEntry: undefined,
+    completed: [],
+    meetingEnded: true,
+    speakers: current.speakers.map((speaker) => ({ ...speaker, status: "available" })),
+    activity: [{ id: `activity-${Date.now()}`, message: "Meeting ended", createdAt: new Date().toISOString() }, ...current.activity].slice(0, 12)
+  })),
   returnCurrent: () => set((current) => push(current, returnCurrentToQueue(current))),
   skipCurrent: () => set((current) => (current.currentEntry ? push(current, { ...current, currentEntry: undefined, activity: [{ id: `activity-${Date.now()}`, message: "Current speaker skipped", createdAt: new Date().toISOString() }, ...current.activity].slice(0, 12) }) : current)),
-  restoreCompletedEntry: (completedId) => set((current) => push(current, restoreCompleted(current, completedId))),
+  restoreCompletedEntry: (completedId) => set((current) => {
+    const next = restoreCompleted(current, completedId);
+    return push(current, next === current ? next : { ...next, meetingEnded: false });
+  }),
   updateSettings: (settings) => set((current) => push(current, { ...current, settings: { ...current.settings, ...settings } }, false)),
   addCategory: (category) => set((current) => {
     const cleanCategory = category.trim();
@@ -144,6 +174,7 @@ export function selectSerializableState(state: QueueStore): QueueState {
     queue: state.queue,
     currentEntry: state.currentEntry,
     completed: state.completed,
+    meetingEnded: state.meetingEnded,
     settings: state.settings,
     activity: state.activity
   };
