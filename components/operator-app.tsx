@@ -64,19 +64,17 @@ export function OperatorApp() {
 
   const changeSessionTitle = (sessionTitle: string) => {
     if (sessionTitle === store.settings.sessionTitle) return;
-    if (hasLiveSession) {
-      const ok = window.confirm("End the current session and clear the queue, current speaker, and completed history before switching sessions?");
+    const shouldReset = hasLiveSession || store.meetingEnded;
+    if (shouldReset) {
+      const ok = window.confirm("Changing sessions will reset the queue, current speaker, completed history, and loaded speaker. Continue?");
       if (!ok) return;
-      store.endSession();
-    } else if (store.meetingEnded) {
       store.endSession();
     }
     store.updateSettings({ sessionTitle });
   };
 
   const endSession = () => {
-    if (!hasLiveSession) return;
-    const ok = window.confirm("End this session? This clears the queue, current speaker, and completed history, but keeps saved speakers and meeting setup.");
+    const ok = window.confirm("End this session? This clears the queue, current speaker, completed history, and loaded speaker, but keeps saved speakers and meeting setup.");
     if (ok) store.endSession();
   };
 
@@ -148,21 +146,21 @@ export function OperatorApp() {
           <div className="grid gap-4">
             <div>
               <div className="mb-3 flex items-center gap-2 text-lg font-bold"><Settings className="h-5 w-5 text-unblue" /> Meeting setup</div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(220px,1fr)_minmax(320px,1.5fr)_minmax(180px,1fr)_minmax(220px,1fr)]">
                 <Field label="Meeting title"><input className={inputClass} value={store.settings.meetingTitle} onChange={(event) => store.updateSettings({ meetingTitle: event.target.value })} /></Field>
                 <Field label="Session title"><select className={inputClass} value={store.settings.sessionTitle} onChange={(event) => changeSessionTitle(event.target.value)}>{sessionTitles.map((title) => <option key={title}>{title}</option>)}</select></Field>
                 <Field label="Date"><input className={inputClass} type="date" value={store.settings.meetingDate} onChange={(event) => store.updateSettings({ meetingDate: event.target.value })} /></Field>
                 <Field label="Room"><input className={inputClass} value={store.settings.room} onChange={(event) => store.updateSettings({ room: event.target.value })} /></Field>
                 <Field label="Member State duration"><DurationSelect value={store.settings.memberStateDurationSeconds} onChange={(value) => store.updateSettings({ memberStateDurationSeconds: value, defaultDurationSeconds: value })} /></Field>
                 <Field label="Observer and other duration"><DurationSelect value={store.settings.nonMemberStateDurationSeconds} onChange={(value) => store.updateSettings({ nonMemberStateDurationSeconds: value })} /></Field>
-                <label className="flex min-h-11 items-center gap-3 rounded-md border border-slate-200 px-3 text-sm font-semibold dark:border-slate-700">
+                <label className="flex min-h-11 min-w-0 items-center gap-3 rounded-md border border-slate-200 px-3 text-sm font-semibold dark:border-slate-700 xl:col-span-2">
                   <input type="checkbox" checked={store.settings.showTimerOnDisplay} onChange={(event) => store.updateSettings({ showTimerOnDisplay: event.target.checked })} />
                   Show timer on display screen
                 </label>
-                <div className="grid gap-2 sm:grid-cols-2 xl:col-span-2">
-                  <Button type="button" variant="secondary" onClick={endSession} disabled={!hasLiveSession}><Flag className="h-4 w-4" /> End session</Button>
-                  <Button type="button" variant="danger" onClick={endMeeting} disabled={store.meetingEnded}><Power className="h-4 w-4" /> End meeting</Button>
-                </div>
+              </div>
+              <div className="mt-3 grid gap-2 border-t border-slate-100 pt-3 sm:grid-cols-2 dark:border-slate-800">
+                <Button type="button" variant="secondary" onClick={endSession}><Flag className="h-4 w-4" /> End current session</Button>
+                <Button type="button" variant="danger" onClick={endMeeting} disabled={store.meetingEnded}><Power className="h-4 w-4" /> End meeting</Button>
               </div>
               {store.meetingEnded && <div className="mt-3"><Badge tone="amber">Meeting ended</Badge></div>}
             </div>

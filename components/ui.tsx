@@ -49,9 +49,9 @@ export function Badge({ className, tone = "slate", ...props }: React.HTMLAttribu
   );
 }
 
-export function Field({ label, children }: { label: string; children: React.ReactNode }) {
+export function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
-    <label className="grid gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">
+    <label className={cn("grid min-w-0 gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200", className)}>
       <span>{label}</span>
       {children}
     </label>
@@ -59,4 +59,4 @@ export function Field({ label, children }: { label: string; children: React.Reac
 }
 
 export const inputClass =
-  "min-h-11 rounded-md border border-slate-200 bg-white px-3 text-sm text-ink shadow-sm transition focus:border-rcteal dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100";
+  "min-h-11 w-full min-w-0 truncate rounded-md border border-slate-200 bg-white px-3 text-sm text-ink shadow-sm transition focus:border-rcteal dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100";
