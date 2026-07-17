@@ -245,23 +245,20 @@ export function OperatorApp() {
                 <div className="grid gap-4">
                   <div className="rounded-lg border border-blue-100 bg-blue-50 p-5 dark:border-blue-900 dark:bg-blue-950">
                     <p className="text-sm font-bold uppercase text-unblue">On the floor</p>
-                    <h3 className="mt-1 text-3xl font-bold">{currentSpeaker.fullName}</h3>
-                    <p className="mt-1 text-slate-700 dark:text-slate-200">{currentSpeaker.delegation} · {currentSpeaker.title}</p>
+                    <h3 className="mt-1 break-words text-2xl font-bold leading-tight [overflow-wrap:anywhere] xl:text-3xl">{currentSpeaker.fullName}</h3>
+                    <p className="mt-2 break-words text-slate-700 [overflow-wrap:anywhere] dark:text-slate-200">{currentSpeaker.delegation} · {currentSpeaker.title}</p>
                     <div className="mt-3 flex flex-wrap gap-2"><Badge tone="blue">{store.currentEntry?.requestType}</Badge><Badge>{currentSpeaker.preferredLanguage}</Badge></div>
                     {store.currentEntry?.note && <p className="mt-3 rounded-md bg-white p-3 text-sm dark:bg-slate-900">{store.currentEntry.note}</p>}
                   </div>
                   <SpeakerTimer durationSeconds={store.currentEntry?.allocatedSeconds ?? store.settings.defaultDurationSeconds} activeKey={store.currentEntry?.id} />
                   <div className="grid gap-2">
-                    <Button type="button" onClick={() => store.goToNext(elapsedSince(store.currentEntry?.requestedAt))} disabled={!nextEntry}>Go to next speaker</Button>
-                    <Button type="button" onClick={() => store.endCurrent(elapsedSince(store.currentEntry?.requestedAt))}>End intervention</Button>
-                    <Button type="button" variant="secondary" onClick={store.returnCurrent}>Return to queue</Button>
-                    <Button type="button" variant="danger" onClick={() => window.confirm("Skip current speaker?") && store.skipCurrent()}>Skip speaker</Button>
+                    <Button type="button" size="lg" onClick={() => store.goToNext(elapsedSince(store.currentEntry?.requestedAt))} disabled={!nextEntry}>Next speaker</Button>
                   </div>
                 </div>
               ) : (
                 <div className="grid gap-3">
-                  <Empty title="No active speaker" detail="Start the next waiting intervention when the Chair gives the floor." />
-                  <Button type="button" size="lg" onClick={() => store.goToNext()} disabled={!nextEntry}>Go to next speaker</Button>
+                  <Empty title="No active speaker" detail="Start the first waiting intervention when the Chair gives the floor." />
+                  <Button type="button" size="lg" onClick={() => store.goToNext()} disabled={!nextEntry}>Start first speaker</Button>
                 </div>
               )}
               <div className="mt-4 grid gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
@@ -305,7 +302,7 @@ export function OperatorApp() {
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950"><div className="text-xs font-bold uppercase text-slate-500">{label}</div><div className="text-xl font-bold">{value}</div></div>;
+  return <div className="min-w-0 rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950"><div className="text-xs font-bold uppercase text-slate-500">{label}</div><div className="mt-1 max-h-16 overflow-hidden break-words text-lg font-bold leading-tight [overflow-wrap:anywhere]">{value}</div></div>;
 }
 
 function DurationSelect({ value, onChange }: { value: number; onChange: (value: number) => void }) {

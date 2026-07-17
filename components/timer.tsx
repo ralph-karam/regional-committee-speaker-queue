@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Pause, Play, RotateCcw } from "lucide-react";
+import { AlertTriangle, Pause, Play } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button, cn } from "@/components/ui";
 import { formatRemaining, timerWarning } from "@/lib/timer-logic";
@@ -42,15 +42,10 @@ export function SpeakerTimer({ durationSeconds, activeKey, onExpired }: { durati
         </div>
         <div className="mt-2 text-6xl font-bold tabular-nums">{formatRemaining(remaining)}</div>
       </div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid gap-2">
         <Button type="button" variant="secondary" onClick={() => setRunning((value) => !value)} disabled={!activeKey}>
           {running ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          {running ? "Pause" : "Resume"}
-        </Button>
-        <Button type="button" variant="secondary" onClick={() => setElapsed((value) => Math.max(0, value - 60))} disabled={!activeKey}>Extend</Button>
-        <Button type="button" variant="ghost" onClick={() => setElapsed(0)} disabled={!activeKey}>
-          <RotateCcw className="h-4 w-4" />
-          Reset
+          {running ? "Pause speaking" : "Resume speaking"}
         </Button>
       </div>
       <input type="hidden" data-testid="elapsed-seconds" value={elapsed} />
