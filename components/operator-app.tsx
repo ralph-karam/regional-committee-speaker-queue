@@ -320,7 +320,7 @@ function formatDuration(seconds: number) {
 
 function speakerSubtitle(speaker: { fullName: string; delegation: string; title?: string; category: SpeakerCategory }) {
   const details = [];
-  if (speaker.delegation && speaker.delegation !== speaker.fullName) details.push(speaker.delegation);
+  if (speaker.delegation) details.push(`Entity: ${speaker.delegation}`);
   if (speaker.title && !isFillerTitle(speaker.title, speaker.category)) details.push(speaker.title);
   return details.join(" · ");
 }

@@ -15,6 +15,7 @@ export function SpeakerManagementApp() {
   const store = useQueueStore();
   const [query, setQuery] = useState("");
   const [csvText, setCsvText] = useState("");
+  const [addMode, setAddMode] = useState<"speaker" | "entity">("speaker");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editCategory, setEditCategory] = useState<SpeakerCategory>("Member State");
@@ -29,12 +30,13 @@ export function SpeakerManagementApp() {
   const addSpeaker = (formData: FormData) => {
     const fullName = String(formData.get("fullName") ?? "").trim();
     const delegation = String(formData.get("delegation") ?? "").trim();
-    if (!fullName || !delegation) return;
+    const name = addMode === "entity" ? delegation : fullName;
+    if (!name || !delegation) return;
     const speaker: Speaker = {
       id: `manual-${Date.now()}`,
-      fullName,
+      fullName: name,
       delegation,
-      title: String(formData.get("title") ?? ""),
+      title: addMode === "entity" ? "" : String(formData.get("title") ?? ""),
       category: String(formData.get("category")) as SpeakerCategory,
       preferredLanguage: String(formData.get("preferredLanguage") ?? "English"),
       status: "available"
@@ -96,15 +98,21 @@ export function SpeakerManagementApp() {
         <div className="grid gap-4">
           <Card className="p-4">
             <form action={addSpeaker} className="grid gap-4">
-              <div className="flex items-center gap-2 text-lg font-bold"><Plus className="h-5 w-5 text-unblue" /> Add speaker</div>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-lg font-bold"><Plus className="h-5 w-5 text-unblue" /> Add speaker or entity</div>
+                <div className="grid grid-cols-2 rounded-md border border-slate-200 p-1 text-sm font-semibold dark:border-slate-700">
+                  <button type="button" className={`rounded px-3 py-2 ${addMode === "speaker" ? "bg-unblue text-white" : "text-slate-700 dark:text-slate-200"}`} onClick={() => setAddMode("speaker")}>Speaker</button>
+                  <button type="button" className={`rounded px-3 py-2 ${addMode === "entity" ? "bg-unblue text-white" : "text-slate-700 dark:text-slate-200"}`} onClick={() => setAddMode("entity")}>Entity</button>
+                </div>
+              </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Full name"><input id="new-speaker-name" name="fullName" className={inputClass} required /></Field>
-                <Field label="Delegation / entity"><input name="delegation" className={inputClass} required /></Field>
-                <Field label="Title"><input name="title" className={inputClass} /></Field>
-                <Field label="Language"><input name="preferredLanguage" className={inputClass} defaultValue="English" /></Field>
+                {addMode === "speaker" && <Field label="Full name"><input id="new-speaker-name" name="fullName" className={inputClass} required /></Field>}
+                <Field label={addMode === "entity" ? "Entity name" : "Delegation / entity"}><input name="delegation" className={inputClass} required /></Field>
+                {addMode === "speaker" && <Field label="Title"><input name="title" className={inputClass} /></Field>}
+                {addMode === "speaker" && <Field label="Language"><input name="preferredLanguage" className={inputClass} defaultValue="English" /></Field>}
                 <Field label="Category"><select name="category" className={inputClass} defaultValue="Member State">{categories.map((item) => <option key={item}>{item}</option>)}</select></Field>
                 <div className="flex items-end">
-                  <Button className="w-full" type="submit"><Plus className="h-4 w-4" /> Add speaker</Button>
+                  <Button className="w-full" type="submit"><Plus className="h-4 w-4" /> Add {addMode}</Button>
                 </div>
               </div>
             </form>
@@ -201,7 +209,7 @@ export function SpeakerManagementApp() {
 
 function speakerSubtitle(speaker: Speaker) {
   const details = [];
-  if (speaker.delegation && speaker.delegation !== speaker.fullName) details.push(speaker.delegation);
+  if (speaker.delegation) details.push(`Entity: ${speaker.delegation}`);
   if (speaker.title && !isFillerTitle(speaker.title, speaker.category)) details.push(speaker.title);
   return details.join(" · ");
 }
