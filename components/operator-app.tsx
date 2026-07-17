@@ -68,7 +68,10 @@ export function OperatorApp() {
         event.preventDefault();
         searchRef.current?.focus();
       }
-      if (event.key.toLowerCase() === "n") store.goToNext(elapsedForEntry(store.currentEntry));
+      if (event.key.toLowerCase() === "n") {
+        if (store.currentEntry) store.endCurrent(elapsedForEntry(store.currentEntry));
+        else store.startNext();
+      }
       if (event.key.toLowerCase() === "e") store.endCurrent(elapsedForEntry(store.currentEntry));
       if (event.key.toLowerCase() === "f") window.open("/display", "_blank");
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") store.undo();
@@ -250,13 +253,21 @@ export function OperatorApp() {
                     onReset={store.resetCurrentTimer}
                   />
                   <div className="grid gap-2">
-                    <Button type="button" size="lg" onClick={() => store.goToNext(elapsedForEntry(store.currentEntry))} disabled={!nextEntry}>Next speaker</Button>
+                    <Button type="button" size="lg" onClick={() => store.endCurrent(elapsedForEntry(store.currentEntry))}>Done speaking</Button>
                   </div>
                 </div>
               ) : (
                 <div className="grid gap-3">
-                  <Empty title="No active speaker" detail="Start the first waiting intervention when the Chair gives the floor." />
-                  <Button type="button" size="lg" onClick={() => store.goToNext()} disabled={!nextEntry}>Start first speaker</Button>
+                  {nextSpeaker ? (
+                    <div className="rounded-lg border border-blue-100 bg-blue-50 p-5 dark:border-blue-900 dark:bg-blue-950">
+                      <p className="text-sm font-bold uppercase text-unblue">Ready next speaker</p>
+                      <h3 className="mt-1 break-words text-2xl font-bold leading-tight [overflow-wrap:anywhere] xl:text-3xl">{nextSpeaker.fullName}</h3>
+                      <p className="mt-2 break-words text-lg font-semibold text-unblue [overflow-wrap:anywhere]">{nextSpeaker.category}</p>
+                    </div>
+                  ) : (
+                    <Empty title="No active speaker" detail="Add a speaker to the queue before starting the next intervention." />
+                  )}
+                  <Button type="button" size="lg" onClick={store.startNext} disabled={!nextEntry}>Next speaker</Button>
                 </div>
               )}
               <div className="mt-4 grid gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
