@@ -109,7 +109,7 @@ export function OperatorApp() {
 
       <section className="mx-auto grid max-w-[1800px] gap-4 px-4 py-4">
         <Card className="p-4">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="grid gap-4">
             <div>
               <div className="mb-3 flex items-center gap-2 text-lg font-bold"><Settings className="h-5 w-5 text-unblue" /> Meeting setup</div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -126,9 +126,6 @@ export function OperatorApp() {
                 </label>
               </div>
             </div>
-            <Link href="/speakers" className="inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-md border border-slate-200 bg-white px-4 font-semibold hover:bg-mist dark:border-slate-700 dark:bg-slate-900">
-              <Users className="h-4 w-4" /> Manage list
-            </Link>
           </div>
         </Card>
 
@@ -152,19 +149,21 @@ export function OperatorApp() {
               <div className="mt-4 grid max-h-[760px] gap-2 overflow-auto pr-1">
                 {filteredSpeakers.map((speaker) => {
                   const disabled = speaker.status === "queued" || speaker.status === "speaking" || speaker.status === "unavailable";
+                  const subtitle = speakerSubtitle(speaker);
                   return (
-                    <article key={speaker.id} onDoubleClick={() => store.addSpeakerToQueue(speaker.id, defaultRequestType, defaultDurationForSpeaker(store, speaker))} className="grid gap-2 rounded-md border border-slate-200 p-3 dark:border-slate-800">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h3 className="font-bold">{speaker.fullName}</h3>
-                          <p className="text-sm text-slate-600 dark:text-slate-300">{speaker.delegation} · {speaker.title}</p>
+                    <article key={speaker.id} onDoubleClick={() => store.addSpeakerToQueue(speaker.id, defaultRequestType, defaultDurationForSpeaker(store, speaker))} className="grid gap-3 rounded-md border border-slate-200 p-3 dark:border-slate-800">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="break-words font-bold leading-tight [overflow-wrap:anywhere]">{speaker.fullName}</h3>
+                          {subtitle && <p className="mt-1 break-words text-sm text-slate-600 [overflow-wrap:anywhere] dark:text-slate-300">{subtitle}</p>}
                         </div>
-                        <Badge tone={speaker.status === "available" ? "green" : speaker.status === "unavailable" ? "red" : "amber"}>{speaker.status}</Badge>
+                        <div className="flex shrink-0 flex-col items-end gap-2">
+                          <Badge tone={speaker.category === "Member State" ? "blue" : "slate"}>{speaker.category}</Badge>
+                          {speaker.status !== "available" && <Badge tone={speaker.status === "unavailable" ? "red" : "amber"}>{speaker.status}</Badge>}
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300"><span>{speaker.category}</span><span>{speaker.preferredLanguage}</span><span>{formatDuration(defaultDurationForSpeaker(store, speaker))}</span></div>
-                      <div className="grid grid-cols-[1fr_auto] gap-2">
+                      <div className="grid gap-2">
                         <Button type="button" size="sm" disabled={disabled} onClick={() => store.addSpeakerToQueue(speaker.id, defaultRequestType, defaultDurationForSpeaker(store, speaker))}><Plus className="h-4 w-4" /> Add to queue</Button>
-                        <Button type="button" size="sm" variant="ghost" onClick={() => store.upsertSpeaker({ ...speaker, status: speaker.status === "unavailable" ? "available" : "unavailable" })}>{speaker.status === "unavailable" ? "Restore" : "Unavailable"}</Button>
                       </div>
                     </article>
                   );
@@ -319,6 +318,18 @@ function DurationSelect({ value, onChange }: { value: number; onChange: (value: 
 
 function formatDuration(seconds: number) {
   return `${Math.round(seconds / 60)} min`;
+}
+
+function speakerSubtitle(speaker: { fullName: string; delegation: string; title?: string; category: SpeakerCategory }) {
+  const details = [];
+  if (speaker.delegation && speaker.delegation !== speaker.fullName) details.push(speaker.delegation);
+  if (speaker.title && !isFillerTitle(speaker.title, speaker.category)) details.push(speaker.title);
+  return details.join(" · ");
+}
+
+function isFillerTitle(title: string, category: SpeakerCategory) {
+  const normalized = title.trim().toLowerCase();
+  return normalized === category.toLowerCase() || normalized === `${category.toLowerCase()} delegation`;
 }
 
 function Empty({ title, detail }: { title: string; detail: string }) {
