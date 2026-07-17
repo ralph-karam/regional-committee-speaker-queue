@@ -155,17 +155,10 @@ export function OperatorApp() {
                   const subtitle = speakerSubtitle(speaker);
                   return (
                     <article key={speaker.id} onDoubleClick={() => store.addSpeakerToQueue(speaker.id, defaultRequestType, defaultDurationForSpeaker(store, speaker))} className="grid gap-3 rounded-md border border-slate-200 p-3 dark:border-slate-800">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <h3 className="break-words font-bold leading-tight [overflow-wrap:anywhere]">{speaker.fullName}</h3>
-                          <p className="mt-1 text-sm font-semibold text-unblue">{speaker.category}</p>
-                          {subtitle && <p className="mt-1 break-words text-sm text-slate-600 [overflow-wrap:anywhere] dark:text-slate-300">{subtitle}</p>}
-                        </div>
-                        {speaker.status !== "available" && (
-                          <div className="flex shrink-0 flex-col items-end gap-2">
-                            <Badge tone={speaker.status === "unavailable" ? "red" : "amber"}>{speaker.status}</Badge>
-                          </div>
-                        )}
+                      <div className="min-w-0">
+                        <h3 className="break-words font-bold leading-tight [overflow-wrap:anywhere]">{speaker.fullName}</h3>
+                        <p className="mt-1 text-sm font-semibold text-unblue">{speaker.category}</p>
+                        {subtitle && <p className="mt-1 break-words text-sm text-slate-600 [overflow-wrap:anywhere] dark:text-slate-300">{subtitle}</p>}
                       </div>
                       <div className="grid gap-2">
                         <Button type="button" size="sm" disabled={disabled} onClick={() => store.addSpeakerToQueue(speaker.id, defaultRequestType, defaultDurationForSpeaker(store, speaker))}><Plus className="h-4 w-4" /> Add to queue</Button>
@@ -216,8 +209,6 @@ export function OperatorApp() {
                           <p className="text-sm text-slate-600 dark:text-slate-300">Requested {new Date(entry.requestedAt).toLocaleTimeString()}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <Badge tone={entry.status === "hold" ? "amber" : entry.status === "unavailable" ? "red" : "blue"}>{entry.status}</Badge>
-                          <Badge>{entry.requestType}</Badge>
                           <Badge>{formatDuration(entry.allocatedSeconds)}</Badge>
                         </div>
                       </div>
@@ -293,7 +284,7 @@ export function OperatorApp() {
                 return (
                   <article key={entry.id} className="rounded-md border border-slate-200 p-3 dark:border-slate-800">
                     <h3 className="font-bold">{speaker?.fullName}</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">{speaker?.delegation} · {entry.requestType}</p>
+                    <p className="text-sm font-semibold text-unblue">{speaker?.category}</p>
                     <p className="mt-2 text-sm">{new Date(entry.startedAt).toLocaleTimeString()} to {new Date(entry.endedAt).toLocaleTimeString()} · {Math.round(entry.durationSeconds / 60)}m</p>
                     {entry.note && <p className="mt-2 rounded-md bg-slate-100 p-2 text-sm dark:bg-slate-800">{entry.note}</p>}
                     <Button className="mt-3" type="button" size="sm" variant="secondary" onClick={() => store.restoreCompletedEntry(entry.id)}><RotateCcw className="h-4 w-4" /> Restore to queue</Button>
