@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { selectSerializableState, useQueueStore } from "@/lib/store";
 import { activeQueueService } from "@/lib/supabase-service";
 
@@ -8,6 +8,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const hydrate = useQueueStore((state) => state.hydrate);
   const hydrated = useQueueStore((state) => state.hydrated);
   const darkMode = useQueueStore((state) => state.settings.darkMode);
+  const lastLocalChangeUntil = useRef(0);
 
   useEffect(() => {
     hydrate();
@@ -15,10 +16,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let applyingRemote = false;
+    let saveTimer: number | undefined;
     const unsubscribe = useQueueStore.subscribe((state) => {
-      if (state.hydrated && !applyingRemote) void state.persist(selectSerializableState(state));
+      if (!state.hydrated || applyingRemote) return;
+      lastLocalChangeUntil.current = Date.now() + 1_000;
+      window.clearTimeout(saveTimer);
+      saveTimer = window.setTimeout(() => {
+        void state.persist(selectSerializableState(useQueueStore.getState()));
+      }, 250);
     });
     const unsubscribeRemote = activeQueueService.subscribe?.((state) => {
+      if (Date.now() < lastLocalChangeUntil.current) return;
       applyingRemote = true;
       useQueueStore.getState().applyRemoteState(state);
       window.setTimeout(() => {
@@ -26,6 +34,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       }, 0);
     });
     return () => {
+      window.clearTimeout(saveTimer);
       unsubscribe();
       unsubscribeRemote?.();
     };

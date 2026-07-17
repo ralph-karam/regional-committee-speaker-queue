@@ -1,10 +1,12 @@
-import { createInitialState } from "@/lib/default-state";
+import { createInitialState, currentDateInputValue } from "@/lib/default-state";
 import { sessionTitles } from "@/lib/session-titles";
 import { QueueState } from "@/lib/types";
 
 export function normalizeQueueState(saved?: Partial<QueueState> | null): QueueState {
   const initial = createInitialState();
   if (!saved) return initial;
+  const savedDate = saved.settings?.meetingDate;
+  const meetingDate = savedDate && /^\d{4}-\d{2}-\d{2}$/.test(savedDate) ? savedDate : currentDateInputValue();
 
   return {
     ...initial,
@@ -12,6 +14,7 @@ export function normalizeQueueState(saved?: Partial<QueueState> | null): QueueSt
     settings: {
       ...initial.settings,
       ...saved.settings,
+      meetingDate,
       sessionTitle: sessionTitles.includes(saved.settings?.sessionTitle ?? "") ? saved.settings?.sessionTitle ?? initial.settings.sessionTitle : initial.settings.sessionTitle
     },
     queue: (saved.queue ?? []).map((entry) => ({ ...entry, allocatedSeconds: entry.allocatedSeconds ?? initial.settings.defaultDurationSeconds, elapsedSeconds: entry.elapsedSeconds ?? 0, timerRunning: entry.timerRunning ?? true })),
