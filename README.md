@@ -41,14 +41,27 @@ Shortcuts do not activate while typing in an input, select, or text area.
 
 ## CSV Format
 
-Speaker import expects a header row:
+Speaker import accepts the compact meeting-list format:
+
+```csv
+MS,Lebanon
+NSA,International Health Coalition
+Observer,Regional Observer Mission
+UN,UNICEF Regional Office
+IGO,Pacific Health Forum
+Secretariat,Regional Committee Secretariat
+```
+
+The first column is the entity type. Supported codes include `MS`, `NSA`, `Observer`, `UN`, `IGO`, and `Secretariat`.
+
+It also accepts the full export format with a header row:
 
 ```csv
 fullName,delegation,title,category,preferredLanguage,status
 "Maya Haddad","Argana","Permanent Representative","Member State","Arabic","available"
 ```
 
-Valid categories are `Member State`, `Observer`, `UN Entity`, `Intergovernmental Organization`, and `Secretariat`.
+Valid categories are `Member State`, `Non-State Actor`, `Observer`, `UN Entity`, `Intergovernmental Organization`, and `Secretariat`.
 
 ## Tests
 

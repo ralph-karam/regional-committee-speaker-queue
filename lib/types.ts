@@ -2,6 +2,7 @@ export type SpeakerStatus = "available" | "queued" | "speaking" | "completed" | 
 
 export type SpeakerCategory =
   | "Member State"
+  | "Non-State Actor"
   | "Observer"
   | "UN Entity"
   | "Intergovernmental Organization"

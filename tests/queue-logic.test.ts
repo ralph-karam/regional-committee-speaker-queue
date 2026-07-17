@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { parseSpeakerCsv } from "@/lib/csv";
 import { createInitialState } from "@/lib/default-state";
 import { addToQueue, defaultDurationForSpeaker, endCurrentSpeaker, reorderQueue, restoreCompleted, startNextSpeaker } from "@/lib/queue-logic";
 import { localQueueService } from "@/lib/storage-service";
@@ -84,5 +85,36 @@ describe("local storage service", () => {
     const state = addToQueue(createInitialState(), "sp-argana");
     localQueueService.save(state);
     expect(localQueueService.load().queue[0].speakerId).toBe("sp-argana");
+  });
+});
+
+describe("speaker CSV parsing", () => {
+  it("imports compact MS rows without requiring a header", () => {
+    const speakers = parseSpeakerCsv("MS,Lebanon");
+    expect(speakers[0]).toMatchObject({
+      fullName: "Lebanon",
+      delegation: "Lebanon",
+      category: "Member State",
+      status: "available"
+    });
+  });
+
+  it("imports compact NSA rows as non-member speakers", () => {
+    const speakers = parseSpeakerCsv("NSA,International Health Coalition");
+    expect(speakers[0]).toMatchObject({
+      fullName: "International Health Coalition",
+      delegation: "International Health Coalition",
+      category: "Non-State Actor"
+    });
+  });
+
+  it("still imports the full CSV format with a header", () => {
+    const speakers = parseSpeakerCsv('fullName,delegation,title,category,preferredLanguage,status\n"Maya Haddad","Argana","Permanent Representative","Member State","Arabic","available"');
+    expect(speakers[0]).toMatchObject({
+      fullName: "Maya Haddad",
+      delegation: "Argana",
+      category: "Member State",
+      preferredLanguage: "Arabic"
+    });
   });
 });

@@ -29,7 +29,7 @@ import { useQueueStore } from "@/lib/store";
 import { RequestType, Speaker, SpeakerCategory } from "@/lib/types";
 import { elapsedSince } from "@/lib/timer-logic";
 
-const categories: Array<SpeakerCategory | "All"> = ["All", "Member State", "Observer", "UN Entity", "Intergovernmental Organization", "Secretariat"];
+const categories: Array<SpeakerCategory | "All"> = ["All", "Member State", "Non-State Actor", "Observer", "UN Entity", "Intergovernmental Organization", "Secretariat"];
 const requestTypes: RequestType[] = ["General intervention", "Point of order", "Right of reply", "Procedural intervention", "Secretariat clarification", "Other"];
 
 export function OperatorApp() {
