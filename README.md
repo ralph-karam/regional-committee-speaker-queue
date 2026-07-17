@@ -24,7 +24,7 @@ Open:
 - Public display page with no administrative controls or private notes
 - Separate speaker-management page with add, delete, CSV import, and CSV export tools
 - Completed intervention history with restore, CSV export, and clear confirmation
-- Local-storage persistence, saved-status indicator, undo, dark mode, density setting, keyboard shortcuts, and activity log
+- Local-storage persistence, saved-status indicator, undo, dark mode, keyboard shortcuts, and activity log
 - Sample fictional speaker data
 - A service layer in `lib/storage-service.ts` so local storage can later be replaced by Supabase, Firebase, or another real-time backend
 

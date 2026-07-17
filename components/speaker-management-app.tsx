@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileUp, Mic2, Plus, Search, Trash2 } from "lucide-react";
+import { Check, Download, FileUp, Mic2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Badge, Button, Card, Field, inputClass } from "@/components/ui";
@@ -15,6 +15,9 @@ export function SpeakerManagementApp() {
   const store = useQueueStore();
   const [query, setQuery] = useState("");
   const [csvText, setCsvText] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editCategory, setEditCategory] = useState<SpeakerCategory>("Member State");
 
   const speakers = useMemo(() => {
     const term = query.toLowerCase();
@@ -52,6 +55,24 @@ export function SpeakerManagementApp() {
     anchor.download = filename;
     anchor.click();
     URL.revokeObjectURL(url);
+  };
+
+  const startEdit = (speaker: Speaker) => {
+    setEditingId(speaker.id);
+    setEditName(speaker.fullName);
+    setEditCategory(speaker.category);
+  };
+
+  const saveEdit = (speaker: Speaker) => {
+    const fullName = editName.trim();
+    if (!fullName) return;
+    store.upsertSpeaker({
+      ...speaker,
+      fullName,
+      delegation: speaker.delegation === speaker.fullName ? fullName : speaker.delegation,
+      category: editCategory
+    });
+    setEditingId(null);
   };
 
   return (
@@ -127,24 +148,46 @@ export function SpeakerManagementApp() {
           <div className="grid max-h-[760px] gap-2 overflow-auto pr-1">
             {speakers.map((speaker) => {
               const subtitle = speakerSubtitle(speaker);
+              const editing = editingId === speaker.id;
               return (
                 <article key={speaker.id} className="grid gap-3 rounded-md border border-slate-200 bg-slate-50/60 p-4 transition hover:border-blue-200 hover:bg-blue-50/40 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-blue-900 dark:hover:bg-blue-950/30">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="break-words text-lg font-bold leading-tight [overflow-wrap:anywhere]">{speaker.fullName}</h3>
-                      {subtitle && <p className="mt-1 break-words text-sm text-slate-600 [overflow-wrap:anywhere] dark:text-slate-300">{subtitle}</p>}
+                      {editing ? (
+                        <div className="grid gap-2">
+                          <input className={inputClass} value={editName} onChange={(event) => setEditName(event.target.value)} aria-label="Speaker name" />
+                          <select className={inputClass} value={editCategory} onChange={(event) => setEditCategory(event.target.value as SpeakerCategory)} aria-label="Speaker group">
+                            {categories.map((item) => <option key={item}>{item}</option>)}
+                          </select>
+                        </div>
+                      ) : (
+                        <>
+                          <h3 className="break-words text-lg font-bold leading-tight [overflow-wrap:anywhere]">{speaker.fullName}</h3>
+                          {subtitle && <p className="mt-1 break-words text-sm text-slate-600 [overflow-wrap:anywhere] dark:text-slate-300">{subtitle}</p>}
+                        </>
+                      )}
                     </div>
-                    <Badge className="shrink-0" tone={speaker.category === "Member State" ? "blue" : "slate"}>{speaker.category}</Badge>
+                    {!editing && <Badge className="shrink-0" tone={speaker.category === "Member State" ? "blue" : "slate"}>{speaker.category}</Badge>}
                   </div>
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="danger"
-                      onClick={() => window.confirm(`Delete ${speaker.fullName} entirely? This removes them from the directory, queue, and history.`) && store.deleteSpeaker(speaker.id)}
-                    >
-                      <Trash2 className="h-4 w-4" /> Delete
-                    </Button>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {editing ? (
+                      <>
+                        <Button type="button" size="sm" onClick={() => saveEdit(speaker)}><Check className="h-4 w-4" /> Save</Button>
+                        <Button type="button" size="sm" variant="secondary" onClick={() => setEditingId(null)}><X className="h-4 w-4" /> Cancel</Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button type="button" size="sm" variant="secondary" onClick={() => startEdit(speaker)}><Pencil className="h-4 w-4" /> Edit</Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="danger"
+                          onClick={() => window.confirm(`Delete ${speaker.fullName} entirely? This removes them from the directory, queue, and history.`) && store.deleteSpeaker(speaker.id)}
+                        >
+                          <Trash2 className="h-4 w-4" /> Delete
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </article>
               );

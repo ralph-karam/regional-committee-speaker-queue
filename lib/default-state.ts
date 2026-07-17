@@ -16,7 +16,6 @@ export const defaultSettings: MeetingSettings = {
   automaticPromotion: true,
   soundOnRequest: false,
   soundOnExpired: false,
-  density: "comfortable",
   darkMode: false
 };
 

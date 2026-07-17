@@ -68,7 +68,6 @@ export interface MeetingSettings {
   automaticPromotion: boolean;
   soundOnRequest: boolean;
   soundOnExpired: boolean;
-  density: "comfortable" | "compact";
   darkMode: boolean;
 }
 

@@ -22,7 +22,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Clock } from "@/components/clock";
 import { SpeakerTimer } from "@/components/timer";
 import { Badge, Button, Card, Field, inputClass } from "@/components/ui";
-import { averageWaitMinutes, defaultDurationForSpeaker, speakerById } from "@/lib/queue-logic";
+import { defaultDurationForSpeaker, speakerById } from "@/lib/queue-logic";
 import { sessionTitles } from "@/lib/session-titles";
 import { useQueueStore } from "@/lib/store";
 import { RequestType, SpeakerCategory } from "@/lib/types";
@@ -119,7 +119,6 @@ export function OperatorApp() {
                 <Field label="Room"><input className={inputClass} value={store.settings.room} onChange={(event) => store.updateSettings({ room: event.target.value })} /></Field>
                 <Field label="Member State duration"><DurationSelect value={store.settings.memberStateDurationSeconds} onChange={(value) => store.updateSettings({ memberStateDurationSeconds: value, defaultDurationSeconds: value })} /></Field>
                 <Field label="Observer and other duration"><DurationSelect value={store.settings.nonMemberStateDurationSeconds} onChange={(value) => store.updateSettings({ nonMemberStateDurationSeconds: value })} /></Field>
-                <Field label="Density"><select className={inputClass} value={store.settings.density} onChange={(event) => store.updateSettings({ density: event.target.value as "comfortable" | "compact" })}><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select></Field>
                 <label className="flex min-h-11 items-center gap-3 rounded-md border border-slate-200 px-3 text-sm font-semibold dark:border-slate-700">
                   <input type="checkbox" checked={store.settings.showTimerOnDisplay} onChange={(event) => store.updateSettings({ showTimerOnDisplay: event.target.checked })} />
                   Show timer on display screen
@@ -174,9 +173,8 @@ export function OperatorApp() {
 
           <section className={mobileTab !== "queue" ? "hidden md:block" : ""}>
             <Card className="p-4">
-              <div className="mb-4 grid gap-3 md:grid-cols-5">
+              <div className="mb-4 grid gap-3 md:grid-cols-4">
                 <Stat label="Waiting" value={String(store.queue.filter((entry) => entry.status === "waiting").length)} />
-                <Stat label="Avg wait" value={`${averageWaitMinutes(store)}m`} />
                 <Stat label="Current" value={currentSpeaker?.delegation ?? "None"} />
                 <Stat label="Next" value={nextSpeaker?.delegation ?? "None"} />
                 <Stat label="Completed" value={String(store.completed.length)} />
