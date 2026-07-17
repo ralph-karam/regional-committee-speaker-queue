@@ -73,4 +73,19 @@ Tests cover queue addition, duplicate prevention, reordering, starting and endin
 
 ## Backend Upgrade Path
 
-The UI uses Zustand for local state and `lib/storage-service.ts` for persistence. To add real-time sync later, implement the same `QueueDataService` interface using Supabase or Firebase, then add subscriptions that hydrate state when remote queue changes arrive.
+The app uses local storage unless Supabase environment variables are present. To sync multiple laptops:
+
+1. Create a Supabase project.
+2. Open Supabase SQL Editor and run `supabase-schema.sql`.
+3. In Vercel, add:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_MEETING_ID=regional-committee
+```
+
+4. Redeploy Vercel.
+5. Open `/` on the admin laptop and `/display` on the display laptop.
+
+The first version stores one JSON state document in the `meetings` table. This is intentionally simple for a live meeting tool. Later, it can be normalized into separate `speakers`, `queue_entries`, and `completed_interventions` tables.

@@ -1,0 +1,23 @@
+import { createInitialState } from "@/lib/default-state";
+import { sessionTitles } from "@/lib/session-titles";
+import { QueueState } from "@/lib/types";
+
+export function normalizeQueueState(saved?: Partial<QueueState> | null): QueueState {
+  const initial = createInitialState();
+  if (!saved) return initial;
+
+  return {
+    ...initial,
+    ...saved,
+    settings: {
+      ...initial.settings,
+      ...saved.settings,
+      sessionTitle: sessionTitles.includes(saved.settings?.sessionTitle ?? "") ? saved.settings?.sessionTitle ?? initial.settings.sessionTitle : initial.settings.sessionTitle
+    },
+    queue: (saved.queue ?? []).map((entry) => ({ ...entry, allocatedSeconds: entry.allocatedSeconds ?? initial.settings.defaultDurationSeconds })),
+    currentEntry: saved.currentEntry ? { ...saved.currentEntry, allocatedSeconds: saved.currentEntry.allocatedSeconds ?? initial.settings.defaultDurationSeconds } : undefined,
+    speakers: saved.speakers ?? initial.speakers,
+    completed: saved.completed ?? initial.completed,
+    activity: saved.activity ?? initial.activity
+  };
+}

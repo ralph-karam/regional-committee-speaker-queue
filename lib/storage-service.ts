@@ -1,34 +1,25 @@
 import { createInitialState } from "@/lib/default-state";
-import { sessionTitles } from "@/lib/session-titles";
+import { normalizeQueueState } from "@/lib/state-normalizer";
 import { QueueState } from "@/lib/types";
 
 export interface QueueDataService {
-  load(): QueueState;
-  save(state: QueueState): void;
-  clear(): void;
+  load(): QueueState | Promise<QueueState>;
+  save(state: QueueState): void | Promise<void>;
+  clear(): void | Promise<void>;
+  subscribe?: (onState: (state: QueueState) => void) => () => void;
+  mode: "local" | "supabase";
 }
 
 const storageKey = "regional-committee-speaker-queue";
 
 export const localQueueService: QueueDataService = {
+  mode: "local",
   load() {
     if (typeof window === "undefined") return createInitialState();
     const saved = window.localStorage.getItem(storageKey);
     if (!saved) return createInitialState();
     try {
-      const initial = createInitialState();
-      const parsed = JSON.parse(saved) as QueueState;
-      return {
-        ...initial,
-        ...parsed,
-        settings: {
-          ...initial.settings,
-          ...parsed.settings,
-          sessionTitle: sessionTitles.includes(parsed.settings?.sessionTitle) ? parsed.settings.sessionTitle : initial.settings.sessionTitle
-        },
-        queue: (parsed.queue ?? []).map((entry) => ({ ...entry, allocatedSeconds: entry.allocatedSeconds ?? initial.settings.defaultDurationSeconds })),
-        currentEntry: parsed.currentEntry ? { ...parsed.currentEntry, allocatedSeconds: parsed.currentEntry.allocatedSeconds ?? initial.settings.defaultDurationSeconds } : undefined
-      };
+      return normalizeQueueState(JSON.parse(saved) as QueueState);
     } catch {
       return createInitialState();
     }

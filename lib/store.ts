@@ -13,7 +13,7 @@ import {
   startNextSpeaker,
   updateEntry
 } from "@/lib/queue-logic";
-import { localQueueService } from "@/lib/storage-service";
+import { activeQueueService } from "@/lib/supabase-service";
 import { MeetingSettings, QueueEntry, QueueState, RequestType, Speaker } from "@/lib/types";
 
 type QueueStore = QueueState & {
@@ -21,7 +21,8 @@ type QueueStore = QueueState & {
   lastSavedAt?: string;
   undoStack: QueueState[];
   hydrate: () => void;
-  persist: (state: QueueState) => void;
+  persist: (state: QueueState) => void | Promise<void>;
+  applyRemoteState: (state: QueueState) => void;
   addSpeakerToQueue: (speakerId: string, requestType?: RequestType, allocatedSeconds?: number) => void;
   removeEntry: (entryId: string) => void;
   moveEntry: (entryId: string, direction: "up" | "down" | "top") => void;
@@ -55,10 +56,12 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
   hydrated: false,
   undoStack: [],
   hydrate: () => {
-    const loaded = localQueueService.load();
-    set({ ...loaded, hydrated: true, undoStack: [], lastSavedAt: new Date().toISOString() });
+    void Promise.resolve(activeQueueService.load()).then((loaded) => {
+      set({ ...loaded, hydrated: true, undoStack: [], lastSavedAt: new Date().toISOString() });
+    });
   },
-  persist: (state) => localQueueService.save(state),
+  persist: (state) => activeQueueService.save(state),
+  applyRemoteState: (state) => set((current) => ({ ...state, hydrated: true, undoStack: current.undoStack, lastSavedAt: new Date().toISOString() })),
   addSpeakerToQueue: (speakerId, requestType, allocatedSeconds) => set((current) => push(current, addToQueue(current, speakerId, requestType, allocatedSeconds))),
   removeEntry: (entryId) => set((current) => push(current, removeFromQueue(current, entryId))),
   moveEntry: (entryId, direction) => set((current) => push(current, reorderQueue(current, entryId, direction))),
@@ -94,7 +97,7 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
   clearHistory: () => set((current) => push(current, { ...current, completed: [] })),
   resetMeeting: () => {
     const fresh = createInitialState();
-    localQueueService.clear();
+    void activeQueueService.clear();
     set({ ...fresh, hydrated: true, undoStack: [], lastSavedAt: new Date().toISOString() });
   },
   undo: () => {
