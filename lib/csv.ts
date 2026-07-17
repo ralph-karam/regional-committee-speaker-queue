@@ -47,7 +47,7 @@ function compactSpeaker(cells: string[], index: number): Speaker {
     id: `imported-${Date.now()}-${index}`,
     fullName: name,
     delegation: name,
-    title: cells[2] || (category === "Member State" ? "Member State delegation" : category),
+    title: cells[2],
     category,
     preferredLanguage: "English",
     status: "available"

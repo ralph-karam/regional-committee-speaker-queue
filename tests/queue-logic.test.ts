@@ -97,6 +97,7 @@ describe("speaker CSV parsing", () => {
       category: "Member State",
       status: "available"
     });
+    expect(speakers[0].title).toBeUndefined();
   });
 
   it("imports compact NSA rows as non-member speakers", () => {
