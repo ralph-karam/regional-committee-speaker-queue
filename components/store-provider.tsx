@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { selectSerializableState, useQueueStore } from "@/lib/store";
 import { activeQueueService } from "@/lib/supabase-service";
+import { QueueState } from "@/lib/types";
 
 export function StoreProvider({ children, readOnly = false }: { children: React.ReactNode; readOnly?: boolean }) {
   const hydrate = useQueueStore((state) => state.hydrate);
@@ -26,7 +27,7 @@ export function StoreProvider({ children, readOnly = false }: { children: React.
         void state.persist(selectSerializableState(useQueueStore.getState()));
       }, 250);
     });
-    const unsubscribeRemote = activeQueueService.subscribe?.((state) => {
+    const unsubscribeRemote = activeQueueService.subscribe?.((state: QueueState) => {
       if (Date.now() < lastLocalChangeUntil.current) return;
       applyingRemote = true;
       useQueueStore.getState().applyRemoteState(state);

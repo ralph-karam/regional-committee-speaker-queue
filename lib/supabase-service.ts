@@ -22,12 +22,12 @@ export const supabaseQueueService: QueueDataService = {
   mode: "supabase",
   async load() {
     const supabase = getClient();
-    if (!supabase) return localQueueService.load();
+    if (!supabase) return createInitialState();
 
     const { data, error } = await supabase.from("meetings").select("state").eq("id", meetingId).maybeSingle();
     if (error) {
       console.error("Supabase load failed", error);
-      return localQueueService.load();
+      throw error;
     }
 
     if (!data?.state) {
@@ -38,10 +38,7 @@ export const supabaseQueueService: QueueDataService = {
   },
   async save(state) {
     const supabase = getClient();
-    if (!supabase) {
-      localQueueService.save(state);
-      return;
-    }
+    if (!supabase) return;
 
     const { error } = await supabase.from("meetings").upsert({
       id: meetingId,

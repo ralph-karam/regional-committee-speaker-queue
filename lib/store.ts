@@ -63,9 +63,14 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
   hydrated: false,
   undoStack: [],
   hydrate: () => {
-    void Promise.resolve(activeQueueService.load()).then((loaded) => {
-      set({ ...loaded, hydrated: true, undoStack: [], lastSavedAt: new Date().toISOString() });
-    });
+    void Promise.resolve(activeQueueService.load())
+      .then((loaded) => {
+        set((current) => ({ ...loaded, hydrated: true, undoStack: current.undoStack, lastSavedAt: new Date().toISOString() }));
+      })
+      .catch((error) => {
+        console.error("Meeting state load failed", error);
+        set((current) => ({ ...current, hydrated: true }));
+      });
   },
   persist: (state) => activeQueueService.save(state),
   applyRemoteState: (state) => set((current) => ({ ...state, hydrated: true, undoStack: current.undoStack, lastSavedAt: new Date().toISOString() })),
