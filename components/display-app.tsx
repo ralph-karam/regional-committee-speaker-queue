@@ -19,17 +19,19 @@ export function DisplayApp() {
   return (
     <main className="min-h-screen bg-[#071625] text-white">
       <div className="mx-auto grid min-h-screen max-w-7xl grid-rows-[auto_1fr_auto] gap-8 px-8 py-6">
-        <header className="grid items-center gap-4 border-b border-white/15 pb-5 lg:grid-cols-[auto_minmax(0,1fr)_auto_auto]">
-          <BrandLogo className="border-white/20" />
-          <div className="min-w-0">
+        <header className="grid gap-4 border-b border-white/15 pb-5">
+          <div className="grid items-center gap-4 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
+            <WhoLogo className="border-white/20" />
+            <div className="min-w-0">
               <h1 className="text-3xl font-bold">{store.settings.meetingTitle}</h1>
               <p className="mt-1 text-xl text-slate-300">{store.settings.sessionTitle} · {store.settings.room}</p>
+            </div>
+            <BrandLogo className="border-white/20" />
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-end gap-4">
             <Clock large />
             <Button type="button" variant="secondary" onClick={() => document.documentElement.requestFullscreen?.()}><Maximize2 className="h-4 w-4" /> Full screen</Button>
           </div>
-          <WhoLogo className="border-white/20" />
         </header>
 
         <section className="grid items-center gap-8 lg:grid-cols-[1.2fr_0.8fr]">
