@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { parseSpeakerCsv } from "@/lib/csv";
 import { createInitialState } from "@/lib/default-state";
 import { addToQueue, defaultDurationForSpeaker, endCurrentSpeaker, reorderQueue, restoreCompleted, startNextSpeaker } from "@/lib/queue-logic";
+import { normalizeQueueState } from "@/lib/state-normalizer";
 import { localQueueService } from "@/lib/storage-service";
 import { formatRemaining, timerWarning } from "@/lib/timer-logic";
 
@@ -63,6 +64,21 @@ describe("queue logic", () => {
     const restored = restoreCompleted(completed, completed.completed[0].id);
     expect(restored.completed).toHaveLength(0);
     expect(restored.queue[0].speakerId).toBe("sp-argana");
+  });
+
+  it("clears a stale running current speaker when loading saved state", () => {
+    const started = startNextSpeaker(addToQueue(createInitialState(), "sp-argana"));
+    const stale = normalizeQueueState({
+      ...started,
+      currentEntry: {
+        ...started.currentEntry!,
+        requestedAt: "2026-07-16T10:00:00.000Z",
+        timerRunning: true
+      }
+    });
+
+    expect(stale.currentEntry).toBeUndefined();
+    expect(stale.speakers.find((speaker) => speaker.id === "sp-argana")?.status).toBe("available");
   });
 });
 

@@ -3,7 +3,7 @@ import { StoreProvider } from "@/components/store-provider";
 
 export default function DisplayPage() {
   return (
-    <StoreProvider>
+    <StoreProvider readOnly>
       <DisplayApp />
     </StoreProvider>
   );
