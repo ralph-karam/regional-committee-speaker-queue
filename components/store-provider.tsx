@@ -43,9 +43,16 @@ export function StoreProvider({ children, readOnly = false }: { children: React.
 
   useEffect(() => {
     const sync = () => hydrate();
+    let pollTimer: number | undefined;
+    if (readOnly) {
+      pollTimer = window.setInterval(sync, 1_500);
+    }
     window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
-  }, [hydrate]);
+    return () => {
+      window.clearInterval(pollTimer);
+      window.removeEventListener("storage", sync);
+    };
+  }, [hydrate, readOnly]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);

@@ -31,9 +31,7 @@ export const supabaseQueueService: QueueDataService = {
     }
 
     if (!data?.state) {
-      const initial = createInitialState();
-      await this.save(initial);
-      return initial;
+      return createInitialState();
     }
 
     return normalizeQueueState(data.state as QueueState);
