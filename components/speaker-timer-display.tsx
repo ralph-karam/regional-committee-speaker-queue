@@ -1,6 +1,6 @@
 "use client";
 
-import { Expand } from "lucide-react";
+import { Expand, Minimize2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueueStore } from "@/lib/store";
 import { formatRemaining, remainingForEntry, speakerSignalState } from "@/lib/timer-logic";
@@ -31,6 +31,7 @@ export function SpeakerTimerDisplay() {
   const entry = store.currentEntry;
   const [now, setNow] = useState(() => Date.now());
   const [wakeLockStatus, setWakeLockStatus] = useState<WakeLockStatus>("needs-action");
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | undefined>(undefined);
 
   const remaining = remainingForEntry(entry, store.settings.defaultDurationSeconds, now);
@@ -83,8 +84,19 @@ export function SpeakerTimerDisplay() {
     };
   }, [requestWakeLock]);
 
-  const enterFullscreen = () => {
-    void document.documentElement.requestFullscreen?.();
+  useEffect(() => {
+    const syncFullscreenState = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", syncFullscreenState);
+    syncFullscreenState();
+    return () => document.removeEventListener("fullscreenchange", syncFullscreenState);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen?.();
+    } else {
+      await document.documentElement.requestFullscreen?.();
+    }
     if (wakeLockStatus !== "active") void requestWakeLock();
   };
 
@@ -98,11 +110,12 @@ export function SpeakerTimerDisplay() {
       <div className="absolute right-4 top-4 z-10 flex flex-wrap justify-end gap-2 sm:right-6 sm:top-6">
         <button
           type="button"
-          onClick={enterFullscreen}
+          onClick={() => void toggleFullscreen()}
           className="inline-flex min-h-11 items-center gap-2 rounded-md border border-white/40 bg-black/30 px-3 text-sm font-semibold text-white backdrop-blur hover:bg-black/45"
+          aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
         >
-          <Expand className="h-4 w-4" />
-          <span className="hidden sm:inline">Full screen</span>
+          {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+          <span className="hidden sm:inline">{isFullscreen ? "Exit full screen" : "Full screen"}</span>
         </button>
       </div>
 
