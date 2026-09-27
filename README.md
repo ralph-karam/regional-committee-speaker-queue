@@ -23,7 +23,7 @@ Open:
 - Active queue with hold, restore, unavailable, notes, reorder, remove, top-of-queue confirmation, and clear confirmation
 - Now Speaking panel with timer warnings, return, skip, and end controls
 - Public display page with no administrative controls or private notes
-- Full-screen speaker timer that is green while speaking, pulses amber for the final 30 seconds, turns red at `0:00`, and stays black while idle
+- Full-screen counter that is green while speaking, pulses amber for the final 30 seconds, turns red at `0:00`, and stays black while idle
 - Separate speaker-management page with add, delete, CSV import, and CSV export tools
 - Completed intervention history with restore, CSV export, and clear confirmation
 - Local-storage persistence, saved-status indicator, undo, dark mode, keyboard shortcuts, and activity log
