@@ -14,6 +14,7 @@ import {
   RotateCcw,
   Search,
   Settings,
+  Timer,
   Trash2,
   Undo2,
   Users
@@ -132,6 +133,9 @@ export function OperatorApp() {
             <Clock />
             <Link href="/display" target="_blank" className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 font-semibold hover:bg-mist dark:border-slate-700 dark:bg-slate-900">
               <ExternalLink className="h-4 w-4" /> Display
+            </Link>
+            <Link href="/speaker-timer" target="_blank" className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 font-semibold hover:bg-mist dark:border-slate-700 dark:bg-slate-900">
+              <Timer className="h-4 w-4" /> Speaker timer
             </Link>
             <Link href="/speakers" className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 font-semibold hover:bg-mist dark:border-slate-700 dark:bg-slate-900">
               <Users className="h-4 w-4" /> Manage speakers

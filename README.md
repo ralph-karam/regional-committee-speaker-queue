@@ -13,6 +13,7 @@ Open:
 
 - `http://localhost:3000` for the operator setup and control console
 - `http://localhost:3000/display` for the room projection display
+- `http://localhost:3000/speaker-timer` for the room-facing iPad timer signal
 - `http://localhost:3000/speakers` for adding speakers, deleting speakers, and CSV import/export
 
 ## What It Includes
@@ -22,6 +23,7 @@ Open:
 - Active queue with hold, restore, unavailable, notes, reorder, remove, top-of-queue confirmation, and clear confirmation
 - Now Speaking panel with timer warnings, return, skip, and end controls
 - Public display page with no administrative controls or private notes
+- Full-screen speaker timer that is green while speaking, pulses amber for the final 30 seconds, turns red at `0:00`, and stays black while idle
 - Separate speaker-management page with add, delete, CSV import, and CSV export tools
 - Completed intervention history with restore, CSV export, and clear confirmation
 - Local-storage persistence, saved-status indicator, undo, dark mode, keyboard shortcuts, and activity log
@@ -87,5 +89,7 @@ NEXT_PUBLIC_SUPABASE_MEETING_ID=regional-committee
 
 4. Redeploy Vercel.
 5. Open `/` on the admin laptop and `/display` on the display laptop.
+
+Open `/speaker-timer` on each iPad. The page requests a screen wake lock automatically; if the browser requires a user gesture, tap **Keep awake** once. Wake lock requires the deployed HTTPS site and remains active while the page is visible.
 
 The first version stores one JSON state document in the `meetings` table. This is intentionally simple for a live meeting tool. Later, it can be normalized into separate `speakers`, `queue_entries`, and `completed_interventions` tables.

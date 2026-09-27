@@ -7,6 +7,18 @@ export function timerWarning(remainingSeconds: number) {
   return "normal";
 }
 
+export type SpeakerSignalState = "idle" | "speaking" | "warning" | "expired";
+
+export function speakerSignalState(
+  entry: Pick<QueueEntry, "timerRunning"> | undefined,
+  remainingSeconds: number
+): SpeakerSignalState {
+  if (!entry || entry.timerRunning === false) return "idle";
+  if (remainingSeconds <= 0) return "expired";
+  if (remainingSeconds <= 30) return "warning";
+  return "speaking";
+}
+
 export function formatRemaining(remainingSeconds: number) {
   const absolute = Math.abs(remainingSeconds);
   const minutes = Math.floor(absolute / 60);

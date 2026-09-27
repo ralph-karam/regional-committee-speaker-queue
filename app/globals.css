@@ -22,6 +22,26 @@ textarea {
   @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-unblue;
 }
 
+@keyframes speaker-warning-pulse {
+  0%,
+  100% {
+    background-color: #e6a700;
+  }
+  50% {
+    background-color: #ffd447;
+  }
+}
+
+.speaker-warning-pulse {
+  animation: speaker-warning-pulse 1.15s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .speaker-warning-pulse {
+    animation: none;
+  }
+}
+
 @media print {
   .no-print {
     display: none;

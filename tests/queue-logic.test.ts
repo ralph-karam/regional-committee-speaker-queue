@@ -4,7 +4,7 @@ import { createInitialState } from "@/lib/default-state";
 import { addToQueue, defaultDurationForSpeaker, endCurrentSpeaker, reorderQueue, restoreCompleted, startNextSpeaker } from "@/lib/queue-logic";
 import { normalizeQueueState } from "@/lib/state-normalizer";
 import { localQueueService } from "@/lib/storage-service";
-import { formatRemaining, timerWarning } from "@/lib/timer-logic";
+import { formatRemaining, speakerSignalState, timerWarning } from "@/lib/timer-logic";
 
 describe("queue logic", () => {
   beforeEach(() => {
@@ -93,6 +93,14 @@ describe("timer logic", () => {
   it("formats remaining time", () => {
     expect(formatRemaining(65)).toBe("1:05");
     expect(formatRemaining(-5)).toBe("+0:05");
+  });
+
+  it("maps the room-facing timer to idle, green, warning, and expired states", () => {
+    expect(speakerSignalState(undefined, 120)).toBe("idle");
+    expect(speakerSignalState({ timerRunning: false }, 120)).toBe("idle");
+    expect(speakerSignalState({ timerRunning: true }, 31)).toBe("speaking");
+    expect(speakerSignalState({ timerRunning: true }, 30)).toBe("warning");
+    expect(speakerSignalState({ timerRunning: true }, 0)).toBe("expired");
   });
 });
 
