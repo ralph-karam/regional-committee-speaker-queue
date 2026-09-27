@@ -38,10 +38,10 @@ export function SpeakerTimerDisplay() {
   const signal = speakerSignalState(entry, remaining);
   const counter = formatRemaining(remaining);
   const counterSize = counter.length <= 4
-    ? "text-[10rem] sm:text-[16rem] lg:text-[22rem] xl:text-[26rem] 2xl:text-[32rem]"
+    ? "text-[9rem] sm:text-[18rem] lg:text-[25rem] xl:text-[30rem] 2xl:text-[38rem]"
     : counter.length === 5
-      ? "text-[8rem] sm:text-[13rem] lg:text-[19rem] xl:text-[24rem] 2xl:text-[28rem]"
-      : "text-[7rem] sm:text-[11rem] lg:text-[16rem] xl:text-[20rem] 2xl:text-[24rem]";
+      ? "text-[7rem] sm:text-[14rem] lg:text-[20rem] xl:text-[25rem] 2xl:text-[33rem]"
+      : "text-[6rem] sm:text-[11rem] lg:text-[17rem] xl:text-[21rem] 2xl:text-[26rem]";
 
   useEffect(() => {
     setNow(Date.now());
