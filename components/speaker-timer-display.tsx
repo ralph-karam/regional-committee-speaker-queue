@@ -1,7 +1,7 @@
 "use client";
 
 import { Expand, Minimize2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useQueueStore } from "@/lib/store";
 import { formatRemaining, remainingForEntry, speakerSignalState } from "@/lib/timer-logic";
 import { cn } from "@/components/ui";
@@ -37,11 +37,6 @@ export function SpeakerTimerDisplay() {
   const remaining = remainingForEntry(entry, store.settings.defaultDurationSeconds, now);
   const signal = speakerSignalState(entry, remaining);
   const counter = formatRemaining(remaining);
-  const counterSize = counter.length <= 4
-    ? "text-[9rem] sm:text-[18rem] lg:text-[25rem] xl:text-[30rem] 2xl:text-[38rem]"
-    : counter.length === 5
-      ? "text-[7rem] sm:text-[14rem] lg:text-[20rem] xl:text-[25rem] 2xl:text-[33rem]"
-      : "text-[6rem] sm:text-[11rem] lg:text-[17rem] xl:text-[21rem] 2xl:text-[26rem]";
 
   useEffect(() => {
     setNow(Date.now());
@@ -103,7 +98,7 @@ export function SpeakerTimerDisplay() {
   return (
     <main
       className={cn(
-        "relative grid min-h-[100dvh] place-items-center overflow-hidden px-6 py-10 transition-colors duration-300",
+        "relative grid h-[100dvh] place-items-center overflow-hidden p-2 transition-colors duration-300",
         signalStyles[signal]
       )}
     >
@@ -119,21 +114,56 @@ export function SpeakerTimerDisplay() {
         </button>
       </div>
 
-      <section className="grid w-full place-items-center text-center" aria-live="polite">
+      <section className="grid h-full min-h-0 w-full place-items-center text-center" aria-live="polite">
         {signal !== "idle" && !store.meetingEnded && (
-          <div className="grid place-items-center gap-8">
+          <div className={cn("grid h-full min-h-0 w-full place-items-center", signal === "warning" && "grid-rows-[auto_minmax(0,1fr)] gap-2 pt-14")}>
             {signal === "warning" && (
               <p className="text-2xl font-extrabold uppercase sm:text-4xl">Time running out</p>
             )}
-            <div
-              className={cn("font-black leading-none tabular-nums", counterSize)}
-              aria-label={`${counter} remaining`}
-            >
-              {counter}
-            </div>
+            <FittedCounter value={counter} />
           </div>
         )}
       </section>
     </main>
+  );
+}
+
+function FittedCounter({ value }: { value: string }) {
+  const frameRef = useRef<HTMLDivElement | null>(null);
+  const textRef = useRef<HTMLDivElement | null>(null);
+  const [scale, setScale] = useState(1);
+
+  useLayoutEffect(() => {
+    const frame = frameRef.current;
+    const text = textRef.current;
+    if (!frame || !text) return;
+
+    const fit = () => {
+      const widthScale = (frame.clientWidth * 0.99) / text.offsetWidth;
+      const heightScale = (frame.clientHeight * 0.99) / text.offsetHeight;
+      setScale(Math.min(widthScale, heightScale));
+    };
+
+    const observer = new ResizeObserver(fit);
+    observer.observe(frame);
+    observer.observe(text);
+    fit();
+    void document.fonts?.ready.then(fit);
+    return () => observer.disconnect();
+  }, [value]);
+
+  return (
+    <div ref={frameRef} className="relative h-full min-h-0 w-full min-w-0 overflow-hidden">
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <div
+          ref={textRef}
+          className="w-max whitespace-nowrap text-[32rem] font-black leading-none tabular-nums"
+          style={{ transform: `scale(${scale})` }}
+          aria-label={`${value} remaining`}
+        >
+          {value}
+        </div>
+      </div>
+    </div>
   );
 }
