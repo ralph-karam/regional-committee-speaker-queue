@@ -35,6 +35,12 @@ export function SpeakerTimerDisplay() {
 
   const remaining = remainingForEntry(entry, store.settings.defaultDurationSeconds, now);
   const signal = speakerSignalState(entry, remaining);
+  const counter = formatRemaining(remaining);
+  const counterSize = counter.length <= 4
+    ? "text-[10rem] sm:text-[16rem] lg:text-[22rem] xl:text-[26rem] 2xl:text-[32rem]"
+    : counter.length === 5
+      ? "text-[8rem] sm:text-[13rem] lg:text-[19rem] xl:text-[24rem] 2xl:text-[28rem]"
+      : "text-[7rem] sm:text-[11rem] lg:text-[16rem] xl:text-[20rem] 2xl:text-[24rem]";
 
   useEffect(() => {
     setNow(Date.now());
@@ -107,10 +113,10 @@ export function SpeakerTimerDisplay() {
               <p className="text-2xl font-extrabold uppercase sm:text-4xl">Time running out</p>
             )}
             <div
-              className="text-8xl font-black leading-none tabular-nums sm:text-[12rem] lg:text-[16rem] xl:text-[20rem]"
-              aria-label={`${formatRemaining(remaining)} remaining`}
+              className={cn("font-black leading-none tabular-nums", counterSize)}
+              aria-label={`${counter} remaining`}
             >
-              {formatRemaining(remaining)}
+              {counter}
             </div>
           </div>
         )}
