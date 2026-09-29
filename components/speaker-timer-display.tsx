@@ -26,6 +26,13 @@ const signalStyles = {
   expired: "bg-[#c81e2b] text-white"
 };
 
+const signalColors = {
+  idle: "#000000",
+  speaking: "#168447",
+  warning: "#e6a700",
+  expired: "#c81e2b"
+};
+
 export function SpeakerTimerDisplay() {
   const store = useQueueStore();
   const entry = store.currentEntry;
@@ -86,6 +93,32 @@ export function SpeakerTimerDisplay() {
     return () => document.removeEventListener("fullscreenchange", syncFullscreenState);
   }, []);
 
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    const body = document.body;
+    const previous = {
+      rootBackground: root.style.backgroundColor,
+      rootOverflow: root.style.overflow,
+      bodyBackground: body.style.backgroundColor,
+      bodyOverflow: body.style.overflow,
+      bodyOverscroll: body.style.overscrollBehavior
+    };
+
+    root.style.backgroundColor = signalColors[signal];
+    root.style.overflow = "hidden";
+    body.style.backgroundColor = signalColors[signal];
+    body.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
+
+    return () => {
+      root.style.backgroundColor = previous.rootBackground;
+      root.style.overflow = previous.rootOverflow;
+      body.style.backgroundColor = previous.bodyBackground;
+      body.style.overflow = previous.bodyOverflow;
+      body.style.overscrollBehavior = previous.bodyOverscroll;
+    };
+  }, [signal]);
+
   const toggleFullscreen = async () => {
     if (document.fullscreenElement) {
       await document.exitFullscreen?.();
@@ -98,11 +131,17 @@ export function SpeakerTimerDisplay() {
   return (
     <main
       className={cn(
-        "relative grid h-[100dvh] place-items-center overflow-hidden p-2 transition-colors duration-300",
+        "fixed inset-0 grid h-[100dvh] w-screen place-items-center overflow-hidden overscroll-none p-2 transition-colors duration-300",
         signalStyles[signal]
       )}
     >
-      <div className="absolute right-4 top-4 z-10 flex flex-wrap justify-end gap-2 sm:right-6 sm:top-6">
+      <div
+        className="absolute z-10 flex flex-wrap justify-end gap-2"
+        style={{
+          right: "max(1rem, env(safe-area-inset-right))",
+          top: "max(1rem, env(safe-area-inset-top))"
+        }}
+      >
         <button
           type="button"
           onClick={() => void toggleFullscreen()}
